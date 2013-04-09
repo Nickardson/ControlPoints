@@ -60,6 +60,14 @@ public class CapturePoint {
 		return captureProgress;
 	}
 	
+	public void resetCaptureProgress() {
+		captureProgress = 0;
+		
+		for (int i = 0; i < capturePointRingX.length; i++) {
+			setTeamBlock(this.location.clone().add(capturePointRingX[i], 0, capturePointRingZ[i]), 0);
+		}
+	}
+	
 	/**
 	 * Sets the capture progress of the capture point.
 	 * Returns false if the capture point cannot be changed.

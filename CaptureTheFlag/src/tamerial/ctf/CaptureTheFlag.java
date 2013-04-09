@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -62,25 +63,12 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 			game.getCapturePoints().add(newCapturePoint);
 		}
 		
-		
-		// Set the pre-captured points
-		ConfigLoader.setPreCaptured(
-				game,
-				this.getConfig().getStringList("ctf.pointsBlue"),
-				this.getConfig().getStringList("ctf.pointsRed"));
-		
-		
-		// Add capture points required by the teams to win
-		ConfigLoader.setRequired(
-				game,
-				this.getConfig().getStringList("ctf.blueWin"),
-				this.getConfig().getStringList("ctf.redWin"));
-		
-		
 		capturePer20Ticks = getConfig().getDouble("ctf.capturePer20Ticks");
 		
+		game.prepareCapturePoints(this.getConfig());
 		
 		// Periodic check
+		final FileConfiguration runnableConfig = this.getConfig();
 		Bukkit.getScheduler().runTaskTimer(this, new Runnable(){
 
 			@Override
@@ -153,7 +141,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 							player.setHealth(0);
 						}
 						
-						game.begin();
+						game.begin(runnableConfig);
 					}
 				}
 			}}, 

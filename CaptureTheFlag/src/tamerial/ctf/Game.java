@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
 
 public class Game {
 	public Game(Teams teams, CapturePoints capturePoints) {
@@ -73,12 +74,14 @@ public class Game {
 	/**
 	 * Causes the game to begin
 	 */
-	public void begin() {
+	public void begin(FileConfiguration config) {
 		isGameOver = false;
 		gameOverTicks = 0;
 		canAutoRespawn = true;
 		forceStart = false;
 		forcePause = false;
+		
+		this.prepareCapturePoints(config);
 	}
 
 	/**
@@ -115,5 +118,30 @@ public class Game {
 
 	public void setRedRequiredCaptures(ArrayList<Integer> redRequiredCaptures) {
 		this.redRequiredCaptures = redRequiredCaptures;
+	}
+	
+	/**
+	 * Prepares the capture points for a new round
+	 */
+	public void prepareCapturePoints(FileConfiguration config) {
+		// Clear the points
+		for (CapturePoint point : capturePoints) {
+			point.resetCaptureProgress();
+		}
+		
+		// Set the pre-captured points
+		ConfigLoader.setPreCaptured(
+				this,
+				config.getStringList("ctf.pointsBlue"),
+				config.getStringList("ctf.pointsRed"));
+		
+		
+		// Add capture points required by the teams to win
+		ConfigLoader.setRequired(
+				this,
+				config.getStringList("ctf.blueWin"),
+				config.getStringList("ctf.redWin"));
+		
+		
 	}
 }

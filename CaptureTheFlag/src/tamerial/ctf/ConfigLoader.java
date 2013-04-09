@@ -74,6 +74,9 @@ public class ConfigLoader {
      * @param redWinString
      */
     public static void setRequired(Game game, List<String> blueWinString, List<String> redWinString) {
+    	game.getBlueRequiredCaptures().clear();
+    	game.getRedRequiredCaptures().clear();
+    	
     	for (String blueWin : blueWinString) {
 			int win = Integer.parseInt(blueWin);
 			if (win >= 0)
