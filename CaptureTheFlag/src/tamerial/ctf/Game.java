@@ -1,10 +1,14 @@
 package tamerial.ctf;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 
 public class Game {
 	public Game(Teams teams, CapturePoints capturePoints) {
@@ -14,10 +18,20 @@ public class Game {
 		setBlueRequiredCaptures(new ArrayList<Integer>());
 		setRedRequiredCaptures(new ArrayList<Integer>());
 		
+		this.ignoreDeathsFor = new ArrayList<String>();
+		
+		this.outfits = new HashMap<String, Outfit>();
+		this.selectedClasses = new HashMap<String, String>();
 	}
+	
+	public double capturePer20Ticks = 1;
+	public Map<String, Outfit> outfits;
+	public Map<String, String> selectedClasses;
 	
 	private ArrayList<Integer> blueRequiredCaptures;
 	private ArrayList<Integer> redRequiredCaptures;
+	
+	private ArrayList<String> ignoreDeathsFor;
 	
 	public Location blueSpawn;
 	public Location redSpawn;
@@ -143,5 +157,30 @@ public class Game {
 				config.getStringList("ctf.redWin"));
 		
 		
+	}
+	
+	public boolean changeClass(Player player, String className) {
+		String formattedClass = className.trim().toLowerCase();
+		
+		if (outfits.containsKey(formattedClass)) {
+			selectedClasses.put(player.getName(), formattedClass);
+			
+			System.out.println("Assigning " + player.getName() + " to class " + formattedClass);
+			
+			// TODO: Only kill if game is started and player is not in box
+			double distanceToSpawn = player.getLocation().distanceSquared(this.neutralSpawn);
+
+			if (this.canAutoRespawn) {
+				player.setHealth(0);
+			}
+			
+			player.sendMessage(ChatColor.GREEN + "Class changed to " + formattedClass + ChatColor.RESET);
+			
+			return true;
+		}
+		else {
+			player.sendMessage(ChatColor.RED + "Invalid class name.  Use /class to view available classes" + ChatColor.RESET);
+			return false;
+		}
 	}
 }

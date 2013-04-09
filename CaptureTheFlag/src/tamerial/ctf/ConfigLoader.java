@@ -3,7 +3,6 @@ package tamerial.ctf;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -13,6 +12,8 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class ConfigLoader {
 	/**
@@ -99,7 +100,8 @@ public class ConfigLoader {
 		}
     }
     
-    public static ItemStack loadItem(Map<?, ?> map) {
+    @SuppressWarnings("unchecked")
+	public static ItemStack loadItem(Map<?, ?> map) {
     	System.out.println(map);
     	
     	Material itemMaterial = Material.AIR;
@@ -196,33 +198,76 @@ public class ConfigLoader {
     	return null;
     }
     
+    public static PotionEffect loadPotionEffect(Map<?, ?> map) {
+    	
+    	if (map.containsKey("effect")) {
+    		PotionEffectType type = PotionEffectType.getByName(((String)map.get("effect")).trim().toUpperCase());
+    		
+    		int duration = 2000;
+    		int amplifier = 0;
+    		
+    		if (map.containsKey("duration")) {
+    			duration = (Integer)map.get("duration");
+    		}
+    		
+    		if (map.containsKey("amplifier")) {
+    			amplifier = (Integer)map.get("amplifier");
+    		}
+    		
+    		if (type != null) {
+    			return new PotionEffect(type, duration, amplifier);
+    		}
+    	}
+    	
+    	return null;
+    }
+    
     /**
      * Loads an outfit from a YML config file.
      * @param map
      * @return
      */
-    public static Outfit loadOutfit(Map<?, ?> map) {
+    @SuppressWarnings("unchecked")
+	public static Outfit loadOutfit(Map<?, ?> map) {
     	Outfit newOutfit = new Outfit();
     	
-    	if (map.get("name") != null) {
+    	if (map.containsKey("name")) {
     		newOutfit.name = (String)map.get("name");
     	}
     	
-    	if (map.get("chestplate") != null) {
+    	if (map.containsKey("chestplate")) {
     		newOutfit.chestplate = ConfigLoader.loadItem((Map<?, ?>)map.get("chestplate"));
     	}
     	
-    	if (map.get("leggings") != null) {
+    	if (map.containsKey("leggings")) {
     		newOutfit.leggings = ConfigLoader.loadItem((Map<?, ?>)map.get("leggings"));
     	}
     	
-    	if (map.get("boots") != null) {
+    	if (map.containsKey("boots")) {
     		newOutfit.boots = ConfigLoader.loadItem((Map<?, ?>)map.get("boots"));
     	}
     	
-    	for (Map<?, ?> item : ((List<Map<?, ?>>)map.get("items"))) {
-    		newOutfit.items.add(ConfigLoader.loadItem(item));
+    	if (map.containsKey("items")) {
+	    	for (Map<?, ?> item : ((List<Map<?, ?>>)map.get("items"))) {
+	    		newOutfit.items.add(ConfigLoader.loadItem(item));
+	    	}
     	}
+    	
+    	if (map.containsKey("potions")) {
+    		for (Map<?, ?> potionEffect : ((List<Map<?, ?>>)map.get("potions"))) {
+    			PotionEffect newPotionEffect = loadPotionEffect(potionEffect);
+    			
+    			if (newPotionEffect != null) {
+    				newOutfit.potions.add(newPotionEffect);
+    				
+    				System.out.println(newPotionEffect);
+    			}
+    		}
+    	}
+    	
+    	//new PotionEffect(PotionEffectType.getByName("SLOW"), 6000, 1);
+    	
+    	
     	
     	return newOutfit;
     }

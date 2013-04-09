@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.potion.PotionEffect;
 
 public class Outfit {
 	public static ItemStack getColoredLeather(Material leatherPart, Color color, List<String> lore) {
@@ -22,6 +23,7 @@ public class Outfit {
 	
 	public Outfit() {
 		items = new ArrayList<ItemStack>();
+		potions = new ArrayList<PotionEffect>();
 	}
 	
 	//public ItemStack helmet;
@@ -31,6 +33,16 @@ public class Outfit {
 	public List<ItemStack> items;
 	
 	public String name;
+	
+	public List<PotionEffect> potions;
+	
+	public void applyPotions(Player player) {
+		for (PotionEffect potionEffect : potions) {
+			player.addPotionEffect(potionEffect, true);
+			System.out.println(potionEffect);
+			System.out.println(player.getActivePotionEffects());
+		}
+	}
 	
 	public void applyTo(Player player) {
 		System.out.println("Player: " + player);
@@ -49,6 +61,8 @@ public class Outfit {
 			inv.addItem(item);
 			//System.out.println("Adding item: " + item.toString());
 		}
+		
+		this.applyPotions(player);
 	}
 	
 	/**

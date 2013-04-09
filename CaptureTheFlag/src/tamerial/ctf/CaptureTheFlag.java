@@ -1,7 +1,6 @@
 package tamerial.ctf;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,15 +12,12 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -31,19 +27,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.Potion;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionType;
+import org.bukkit.potion.PotionEffectType;
 
 public class CaptureTheFlag extends JavaPlugin implements Listener {
-	public double capturePer20Ticks = 1;
-	public Map<String, Outfit> outfits;
-	public Map<String, String> selectedClasses;
-	
 	public Game game;
 	
 	@Override
@@ -69,7 +58,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 			game.getCapturePoints().add(newCapturePoint);
 		}
 		
-		capturePer20Ticks = getConfig().getDouble("ctf.capturePer20Ticks");
+		game.capturePer20Ticks = getConfig().getDouble("ctf.capturePer20Ticks");
 		
 		game.prepareCapturePoints(this.getConfig());
 		
@@ -93,7 +82,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 							
 							if (capPoint.isCapturable() && (capPoint.getAssualtingTeam() == 0 || capPoint.getAssualtingTeam() == capturingTeam)) {
 								double previousCaptureProgress = capPoint.getCaptureProgress();
-								boolean changed = capPoint.setCaptureProgress((capPoint.getCaptureProgress() + capturePer20Ticks * capturingTeam * (Math.max(blueMembers, redMembers))));
+								boolean changed = capPoint.setCaptureProgress((capPoint.getCaptureProgress() + game.capturePer20Ticks * capturingTeam * (Math.max(blueMembers, redMembers))));
 								
 								if (changed && Math.abs(capPoint.getCaptureProgress()) == 16) {
 									Bukkit.broadcastMessage((capturingTeam==1?(ChatColor.RED+"Red"):(ChatColor.BLUE+"Blue")) + ChatColor.RESET + " team has captured point #" + Integer.toString(i+1) + "!");
@@ -154,16 +143,29 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 			0,10
 		);
 		
+		// Apply potions every 10 seconds
+		Bukkit.getScheduler().runTaskTimer(this, new Runnable(){
+
+			@Override
+			public void run() {
+				for (Player player : Bukkit.getWorld("world").getPlayers())
+				if (game.selectedClasses.containsKey(player.getName())) {
+					game.outfits.get(game.selectedClasses.get(player.getName())).applyPotions(player);
+				}
+				
+			}}, 
+			0,200
+		);
 		
+
+    	
+    	
 		// Prepare outfits
-		outfits = new HashMap<String, Outfit>();
-		selectedClasses = new HashMap<String, String>();
-		
 		List<Map<?, ?>> outfitList = getConfig().getMapList("ctf.outfits");
 		
 		for (Map<?, ?> outfit : outfitList) {
 			Outfit newOutfit = ConfigLoader.loadOutfit(outfit);
-			outfits.put(newOutfit.name.trim().toLowerCase(), newOutfit);
+			game.outfits.put(newOutfit.name.trim().toLowerCase(), newOutfit);
 		}
 		
 		getServer().getPluginManager().registerEvents(this, this);
@@ -224,36 +226,11 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     	else if (cmd.getName().equalsIgnoreCase("class")) {
     		if (sender instanceof Player) {
     			if (args.length >= 1) {
-    				if (game.teams.getTeam(sender.getName()) != 0) {
-	    				String formattedClass = args[0].trim().toLowerCase();
-	    				
-	    				if (outfits.containsKey(formattedClass)) {
-	    					selectedClasses.put(sender.getName(), formattedClass);
-	    					
-	    					System.out.println("Assigning " + sender.getName() + " to class " + formattedClass);
-	    					
-	    					// TODO: Only kill if game is started and player is not in box
-	    					double distanceToSpawn = ((Player)sender).getLocation().distanceSquared(game.neutralSpawn);
-	    					System.out.println("Distance to spawn: " + distanceToSpawn);
-	    					if (game.canAutoRespawn) {
-	    						((Player) sender).setHealth(0);
-	    					}
-	    					
-	    					sender.sendMessage(ChatColor.GREEN + "Class changed to " + formattedClass + ChatColor.RESET);
-	    					
-	    					return true;
-	    				}
-	    				else {
-	    					sender.sendMessage(ChatColor.RED + "Invalid class name.  Use /class to view available classes" + ChatColor.RESET);
-	    				}
-    				}
-    				else {
-    					sender.sendMessage(ChatColor.RED + "You must be on a team to select a class." + ChatColor.RESET);
-    				}
+    				game.changeClass((Player)sender, args[0]);
     			}
     			else {
     				String list = "";
-    				for (String outfit : outfits.keySet()) {
+    				for (String outfit : game.outfits.keySet()) {
     					list += outfit + ", ";
     				}
     				
@@ -281,7 +258,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 	    	Player player = event.getPlayer();
 	    	String playerName = player.getName();
 	    	if (player.getLocation().distanceSquared(game.neutralSpawn) < 100) {
-	    		if (selectedClasses.containsKey(playerName)) {
+	    		if (game.selectedClasses.containsKey(playerName)) {
 		    		int team = game.teams.getTeam(playerName);
 		    		
 		    		if (team == -1)
@@ -324,13 +301,13 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 	        );
     	//}
     	
-	    if (selectedClasses.containsKey(event.getPlayer().getName())) {
-	    	outfits.get(selectedClasses.get(event.getPlayer().getName())).applyTo(event.getPlayer());
-	    }
-	       
 	    // Remove all potion effects
 	    for (PotionEffect effect : event.getPlayer().getActivePotionEffects()) {
 	    	event.getPlayer().removePotionEffect(effect.getType());
+	    }
+	    
+	    if (game.selectedClasses.containsKey(event.getPlayer().getName())) {
+	    	game.outfits.get(game.selectedClasses.get(event.getPlayer().getName())).applyTo(event.getPlayer());
 	    }
     }
     
@@ -357,8 +334,8 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     			}
     		}
     		else if (event.getCause() == DamageCause.FALL) {
-    			if (selectedClasses.containsKey(damagedPlayer.getName())) {
-    				if (selectedClasses.get(damagedPlayer.getName()).equalsIgnoreCase("scout")) {
+    			if (game.selectedClasses.containsKey(damagedPlayer.getName())) {
+    				if (game.selectedClasses.get(damagedPlayer.getName()).equalsIgnoreCase("scout")) {
     					event.setCancelled(true);
     				}
     			}
@@ -392,8 +369,8 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 	    		if (event.getItem().getType() == Material.POTION) {
 	    			PotionMeta potionMeta = (PotionMeta)event.getItem().getItemMeta();
 	    			if (potionMeta.getDisplayName().equalsIgnoreCase("Cloaking Potion")) {
-	    				if (selectedClasses.containsKey(event.getPlayer().getName())) {
-	    					if (selectedClasses.get(event.getPlayer().getName()).equals("spy")) {
+	    				if (game.selectedClasses.containsKey(event.getPlayer().getName())) {
+	    					if (game.selectedClasses.get(event.getPlayer().getName()).equals("spy")) {
 	    						event.getPlayer().getInventory().setHelmet(null);
 			    			}
 	    				}
