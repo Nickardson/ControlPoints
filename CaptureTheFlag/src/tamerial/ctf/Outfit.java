@@ -30,6 +30,8 @@ public class Outfit {
 	public ItemStack boots;
 	public List<ItemStack> items;
 	
+	public String name;
+	
 	public void applyTo(Player player) {
 		System.out.println("Player: " + player);
 		System.out.println("Inventory: " + player.getInventory());
@@ -65,6 +67,15 @@ public class Outfit {
     	if (typeString.indexOf("LEGGINGS") != -1)
     		return true;
     	if (typeString.indexOf("BOOTS") != -1)
+    		return true;
+    	
+    	return false;
+    }
+	
+	public static boolean isItemLeatherArmor(ItemStack item) {
+    	String typeString = item.getType().toString();
+
+    	if (typeString.indexOf("LEATHER_") != -1)
     		return true;
     	
     	return false;

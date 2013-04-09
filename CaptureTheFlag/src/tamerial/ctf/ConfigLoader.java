@@ -1,9 +1,18 @@
 package tamerial.ctf;
 
 import java.util.List;
+import java.util.Map;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 public class ConfigLoader {
 	/**
@@ -88,5 +97,133 @@ public class ConfigLoader {
 			if (win >= 0)
 				game.getRedRequiredCaptures().add(win);
 		}
+    }
+    
+    public static ItemStack loadItem(Map<?, ?> map) {
+    	System.out.println(map);
+    	
+    	Material itemMaterial = Material.AIR;
+    	int itemCount = 1;
+    	short itemDamage = 0;
+    	String name = "";
+    	
+    	if (map.containsKey("name")) {
+	    	try {
+	    		name = (String)map.get("name");
+	    	}
+	    	catch (NullPointerException err) {
+	    		System.out.println(ChatColor.RED + "Error:  Bad name in outfit item definition.");
+	    	}
+    	}
+    	
+    	// Load material
+    	if (map.containsKey("material")) {
+	    	try {
+	    		itemMaterial = Material.valueOf(((String)map.get("material")).trim().toUpperCase());
+	    	}
+	    	catch (IllegalArgumentException err) {
+	    		System.out.println(ChatColor.RED + "Error:  Bad material in outfit item definition.");
+	    	}
+    	}
+    	
+    	// Load itemcount
+    	if (map.containsKey("count")) {
+	    	try {
+	    		itemCount = (Integer)map.get("count");
+	    	}
+	    	catch (NumberFormatException err) {
+	    		System.out.println(ChatColor.RED + "Error:  Bad item count in outfit item definition.");
+	    	}
+    	}
+    	
+    	if (map.containsKey("damage")) {
+	    	try {
+	    		itemDamage = ((Integer)map.get("damage")).shortValue();
+	    	}
+	    	catch (NumberFormatException err) {
+	    		System.out.println(ChatColor.RED + "Error:  Bad item damage in outfit item definition.");
+	    	}
+    	}
+    	
+    	if (itemMaterial != Material.AIR) {
+    		ItemStack itemStack = new ItemStack(itemMaterial, itemCount, itemDamage);
+    		
+    		if (!name.equals("")) {
+    			ItemMeta meta = itemStack.getItemMeta();
+    			meta.setDisplayName(name);
+    			itemStack.setItemMeta(meta);
+    		}
+    		if (map.containsKey("color")) {
+    			int[] rgb = ConfigLoader.getCoords((String)map.get("color"));
+    			
+    			if (Outfit.isItemLeatherArmor(itemStack)) {
+    				try {
+    					LeatherArmorMeta meta = (LeatherArmorMeta)itemStack.getItemMeta();
+    					meta.setColor(Color.fromRGB(rgb[0], rgb[1], rgb[2]));
+    					itemStack.setItemMeta(meta);
+    				}
+    				catch (IllegalArgumentException err) {
+    					System.out.println(ChatColor.RED + "Error:  Bad item color in outfit item definition.");
+    				}
+    			}
+    		}
+    		
+    		// Enchant item
+    		if (map.containsKey("enchants")) {
+        		try {
+        			List<String> enchants = (List<String>)map.get("enchants");
+        			
+        			for (String enchant : enchants) {
+        				String[] enchantSplit = enchant.split(", ");
+        				
+        				int enchantId = Integer.parseInt(enchantSplit[0]);
+        				
+        				int enchantLevel = 1;
+        				if (enchantSplit.length >= 2) {
+        					Integer.parseInt(enchantSplit[1]);
+        				}
+        				
+        				itemStack.addEnchantment(Enchantment.getById(enchantId), enchantLevel);
+        			}
+        		}
+    	    	catch (Exception err) {
+    	    	}
+        	}
+    		
+        	return itemStack;
+    	}
+    	
+    	return null;
+    }
+    
+    /**
+     * Loads an outfit from a YML config file.
+     * @param map
+     * @return
+     */
+    public static Outfit loadOutfit(Map<?, ?> map) {
+    	Outfit newOutfit = new Outfit();
+    	
+    	if (map.get("name") != null) {
+    		newOutfit.name = (String)map.get("name");
+    	}
+    	
+    	if (map.get("chestplate") != null) {
+    		newOutfit.chestplate = ConfigLoader.loadItem((Map<?, ?>)map.get("chestplate"));
+    	}
+    	
+    	if (map.get("leggings") != null) {
+    		newOutfit.leggings = ConfigLoader.loadItem((Map<?, ?>)map.get("leggings"));
+    	}
+    	
+    	if (map.get("boots") != null) {
+    		newOutfit.boots = ConfigLoader.loadItem((Map<?, ?>)map.get("boots"));
+    	}
+    	
+    	for (Map<?, ?> item : ((List<Map<?, ?>>)map.get("items"))) {
+    		newOutfit.items.add(ConfigLoader.loadItem(item));
+    	}
+    	
+    	return newOutfit;
     }
 }

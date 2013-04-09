@@ -2,6 +2,7 @@ package tamerial.ctf;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
@@ -153,50 +154,12 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 		outfits = new HashMap<String, Outfit>();
 		selectedClasses = new HashMap<String, String>();
 		
-		Outfit outfitArcher = new Outfit();
-		ItemStack outfitArcherChestplate = Outfit.getColoredLeather(Material.LEATHER_CHESTPLATE, Color.fromRGB(135, 111, 78), null);
-		outfitArcherChestplate.addEnchantment(Enchantment.PROTECTION_PROJECTILE, 2);
-		outfitArcher.chestplate = outfitArcherChestplate;
-		outfitArcher.leggings = Outfit.getColoredLeather(Material.LEATHER_LEGGINGS, Color.fromRGB(54, 50, 46), null);
-		outfitArcher.boots = Outfit.getColoredLeather(Material.LEATHER_BOOTS, Color.fromRGB(10, 10, 10), null);
-		ItemStack outfitArcherBow = new ItemStack(Material.BOW);
-		outfitArcherBow.addEnchantment(Enchantment.ARROW_DAMAGE, 1);
-		outfitArcher.items.add(outfitArcherBow);
-		outfitArcher.items.add(new ItemStack(Material.STONE_SWORD));
-		outfitArcher.items.add(new ItemStack(Material.ARROW, 40));
-		outfitArcher.items.add(new ItemStack(Material.APPLE, 10));
+		List<Map<?, ?>> outfitList = getConfig().getMapList("ctf.outfits");
 		
-		outfits.put("archer", outfitArcher);
-		
-		Outfit outfitWarrior = new Outfit();
-		outfitWarrior.chestplate = new ItemStack(Material.IRON_CHESTPLATE);
-		outfitWarrior.chestplate.addEnchantment(Enchantment.PROTECTION_PROJECTILE, 2);
-		outfitWarrior.chestplate.addEnchantment(Enchantment.PROTECTION_FIRE, 1);
-		outfitWarrior.leggings = Outfit.getColoredLeather(Material.LEATHER_LEGGINGS, Color.fromRGB(47, 53, 64), null);
-		outfitWarrior.items.add(new ItemStack(Material.DIAMOND_SWORD));
-		
-		Potion speedPotion = new Potion(PotionType.INSTANT_HEAL, 2);
-		System.out.println(speedPotion.toString());
-		outfitWarrior.items.add(speedPotion.toItemStack(3).clone());
-		
-		outfits.put("warrior", outfitWarrior);
-		
-
-		Outfit outfitSpy = new Outfit();
-		
-		Potion invisibilityPotion = new Potion(PotionType.INVISIBILITY);
-		ItemStack invisibilityPotionStack = invisibilityPotion.toItemStack(2);
-		ItemMeta invisibilityPotionStackMeta = invisibilityPotionStack.getItemMeta();
-		invisibilityPotionStackMeta.setDisplayName("Cloak Potion");
-		invisibilityPotionStack.setItemMeta(invisibilityPotionStackMeta);
-		
-		outfitSpy.boots = new ItemStack(Material.CHAINMAIL_BOOTS);
-		outfitSpy.items.add(new ItemStack(Material.PORK, 3));
-		outfitSpy.items.add(new ItemStack(Material.IRON_SWORD));
-		outfitSpy.items.add(invisibilityPotionStack.clone());
-		
-		
-		outfits.put("spy", outfitSpy);
+		for (Map<?, ?> outfit : outfitList) {
+			Outfit newOutfit = ConfigLoader.loadOutfit(outfit);
+			outfits.put(newOutfit.name.trim().toLowerCase(), newOutfit);
+		}
 		
 		getServer().getPluginManager().registerEvents(this, this);
     }

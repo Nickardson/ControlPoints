@@ -14,3 +14,19 @@ ctf:
   - -1
   capturePer20Ticks: 0.2
   mode: Capture All
+  outfits:
+  - name: Warrior
+    chestplate:
+      name: Warrior's Chestplate
+      color: 135, 111, 78
+      material: leather_chestplate
+      enchants:
+      - 4, 2
+    items:
+    - name: Sword of the Adept
+      material: diamond_sword
+    - name: Elixr of Life
+      material: potion
+      damage: 16421
+      count: 3
+  
