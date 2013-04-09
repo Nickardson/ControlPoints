@@ -5,7 +5,7 @@ commands:
   start:
     permission: ctf.start
     description: Starts a round, regardless of how many players are online.
-    usage: /<command> [gamemode]
+    usage: /<command>
   pause:
     permission: ctf.pause
     description: Pauses a game indefinitely
@@ -18,10 +18,15 @@ commands:
     usage: /<command> [id] [value]
   join:
     description: Join a team, as long as joining won't make your team more than one person overpowered
+    usage: /<command> [red / blue]
+    aliases: team  
   forcejoin:
-    description: Join a team.
+    description: Makes a player join a team.
+    usage: /<command> [player] [team]
+    permission: ctf.forcejoin
   class:
     description: Selects a class
+    aliases: be
   
 permissions:
   ctf.gamemaster:
@@ -35,6 +40,8 @@ permissions:
   ctf.pause:
     default: op
   ctf.stop:
+    default: op
+  ctf.forcejoin:
     default: op
   ctf.listmodes:
     default: op

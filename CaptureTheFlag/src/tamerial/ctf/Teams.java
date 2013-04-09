@@ -1,10 +1,12 @@
 package tamerial.ctf;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 
 public class Teams {
 	public Map<String, Integer> playerTeams = new HashMap<String, Integer>();
@@ -71,5 +73,17 @@ public class Teams {
 	
 	public boolean onSameTeam(String a, String b) {
 		return getTeam(a) == getTeam(b);
+	}
+	
+	public ArrayList<Player> getPlayersOnTeam(int team) {
+		ArrayList<Player> players = new ArrayList<Player>();
+		
+		for (Player player : Bukkit.getWorld("world").getPlayers()) {
+			if (getTeam(player.getName()) == team) {
+				players.add(player);
+			}
+		}
+		
+		return players;
 	}
 }

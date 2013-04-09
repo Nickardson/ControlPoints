@@ -1,7 +1,6 @@
 package tamerial.ctf;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
@@ -30,7 +29,6 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 public class CaptureTheFlag extends JavaPlugin implements Listener {
 	public Game game;
@@ -58,11 +56,14 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 			game.getCapturePoints().add(newCapturePoint);
 		}
 		
-		game.capturePer20Ticks = getConfig().getDouble("ctf.capturePer20Ticks");
-		
 		game.prepareCapturePoints(this.getConfig());
 		
-		// Periodic check
+		
+		// Prepare capturing
+		game.capturePer20Ticks = getConfig().getDouble("ctf.capturePer20Ticks");
+		
+		
+		// Periodic game update
 		final FileConfiguration runnableConfig = this.getConfig();
 		Bukkit.getScheduler().runTaskTimer(this, new Runnable(){
 
@@ -102,6 +103,8 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 					blueHasAll = game.getCapturePoints().isTeamFullyCaptured(game, -1);
 					redHasAll = game.getCapturePoints().isTeamFullyCaptured(game, 1);
 					
+					
+					// Determine winner
 					if ((blueHasAll || redHasAll) && !(blueHasAll && redHasAll)) {
 						int winningTeam = blueHasAll ? -1 : 1;
 						Bukkit.broadcastMessage("The " + ((winningTeam == -1) ? (ChatColor.BLUE + "Blue") : (ChatColor.RED + "Red")) + ChatColor.RESET + " team has won!");
@@ -143,9 +146,8 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 			0,10
 		);
 		
-		// Apply potions every 10 seconds
+		// Periodically apply potions every 10 seconds
 		Bukkit.getScheduler().runTaskTimer(this, new Runnable(){
-
 			@Override
 			public void run() {
 				for (Player player : Bukkit.getWorld("world").getPlayers())
@@ -157,13 +159,9 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 			0,200
 		);
 		
-
-    	
     	
 		// Prepare outfits
-		List<Map<?, ?>> outfitList = getConfig().getMapList("ctf.outfits");
-		
-		for (Map<?, ?> outfit : outfitList) {
+		for (Map<?, ?> outfit : getConfig().getMapList("ctf.outfits")) {
 			Outfit newOutfit = ConfigLoader.loadOutfit(outfit);
 			game.outfits.put(newOutfit.name.trim().toLowerCase(), newOutfit);
 		}
@@ -185,17 +183,23 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     	}
     	else if (cmd.getName().equalsIgnoreCase("pause")) {
     		game.forcePause = !game.forcePause;
+    		sender.sendMessage(ChatColor.GREEN + "Game " + (game.forcePause ? "paused" : "unpaused") + "!");
+    		
+    		return true;
     	}
     	else if (cmd.getName().equalsIgnoreCase("progress")) {
-    		if (args.length == 2) {
+    		if (args.length >= 2) {
     			try {
 	    			int capturePointId = Integer.parseInt(args[0]);
 	    			double progress = Double.parseDouble(args[1]);
 	    			game.getCapturePoints().get(capturePointId).setCaptureProgress(progress);
+	    			
+	    			return true;
     			} 
     			catch (Exception err) {
-    				System.out.println(err.getLocalizedMessage());
-    				sender.sendMessage("Failed to execute");
+    				sender.sendMessage(ChatColor.RED + "Failed to execute, is the flag ID out of bounds?" + ChatColor.RESET);
+    				
+    				return false;
     			}
     		}
     	}
@@ -204,24 +208,47 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     			if (args.length >= 1) {
     				// TODO: Add forced-balancing
     				if (args[0].trim().equalsIgnoreCase("blue")) {
-    					game.teams.setTeam(sender.getName(), -1);
-    					sender.sendMessage("You have joined the " + ChatColor.BLUE + "Blue" + ChatColor.RESET + " team!");
-    					
-    					//((Player)sender).setBedSpawnLocation(blueSpawn, true);
+    					if (game.teams.getPlayersOnTeam(-1).size() <= game.teams.getPlayersOnTeam(1).size()) {
+	    					game.teams.setTeam(sender.getName(), -1);
+	    					sender.sendMessage("You have joined the " + ChatColor.BLUE + "Blue" + ChatColor.RESET + " team!");
+	    					
+	    					return true;
+    					}
+    					else {
+    						sender.sendMessage(ChatColor.RED + "You cannot make the teams unbalanced by more than 1 player." + ChatColor.RESET);
+    					}
     				}
     				else if (args[0].trim().equalsIgnoreCase("red")) {
-    					game.teams.setTeam(sender.getName(), 1);
-    					sender.sendMessage("You have joined the " + ChatColor.RED + "Red" + ChatColor.RESET + " team!");
-    					
-    					//((Player)sender).setBedSpawnLocation(redSpawn, true);
+    					if (game.teams.getPlayersOnTeam(-1).size() <= game.teams.getPlayersOnTeam(1).size()) {
+    	    				game.teams.setTeam(sender.getName(), 1);
+    	    				sender.sendMessage("You have joined the " + ChatColor.RED + "Red" + ChatColor.RESET + " team!");
+    	    				
+    	    				return true;
+	    				}
+						else {
+							sender.sendMessage(ChatColor.RED + "You cannot make the teams unbalanced by more than 1 player." + ChatColor.RESET);
+							return true;
+						}
     				}
     				else {
     					return false;
     				}
-    				
-    				
     			}
     		}
+    	}
+    	else if (cmd.getName().equalsIgnoreCase("forcejoin")) {
+    		if (args.length >= 2) {
+	    		try {
+	    			game.teams.setTeam(args[0], args[1].trim().equalsIgnoreCase("blue") ? -1 : 1);
+	    			
+	    			return true;
+	    		}
+	    		catch (Exception err) {
+	    			sender.sendMessage(ChatColor.RED + "Forcejoin failed.  Malformed team number?" + ChatColor.RESET);
+	    		}
+    		}
+    		
+    		return false;
     	}
     	else if (cmd.getName().equalsIgnoreCase("class")) {
     		if (sender instanceof Player) {
@@ -280,17 +307,9 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     		
     		if (playerTeam == -1) {
     			color = Color.fromRGB(44, 98, 222);
-    			//event.getPlayer().teleport(blueSpawn);
-    			//getServer().dispatchCommand(getServer().getConsoleSender(), "/tp "+event.getPlayer().getName()+" "+blueSpawn.getBlockX()+" "+blueSpawn.getBlockY()+" "+blueSpawn.getBlockZ());
-    			
-    			System.out.println("Teleporting blue to " + game.blueSpawn.toString());
     		}
     		else if (playerTeam == 1) {
     			color = Color.fromRGB(242, 61, 61);
-    			//event.getPlayer().teleport(redSpawn);
-    			//getServer().dispatchCommand(getServer().getConsoleSender(), "/tp "+event.getPlayer().getName()+" "+redSpawn.getBlockX()+" "+redSpawn.getBlockY()+" "+redSpawn.getBlockZ());
-    			
-    			System.out.println("Teleporting red to " + game.redSpawn.toString());
     		}
     		
 	        event.getPlayer().getInventory().setHelmet(
@@ -340,8 +359,6 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     				}
     			}
     		}
-    		
-    		System.out.println("Player damaged by: " + event.getCause());
     	}
     }
     

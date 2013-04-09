@@ -102,8 +102,6 @@ public class ConfigLoader {
     
     @SuppressWarnings("unchecked")
 	public static ItemStack loadItem(Map<?, ?> map) {
-    	System.out.println(map);
-    	
     	Material itemMaterial = Material.AIR;
     	int itemCount = 1;
     	short itemDamage = 0;
@@ -257,11 +255,8 @@ public class ConfigLoader {
     		for (Map<?, ?> potionEffect : ((List<Map<?, ?>>)map.get("potions"))) {
     			PotionEffect newPotionEffect = loadPotionEffect(potionEffect);
     			
-    			if (newPotionEffect != null) {
+    			if (newPotionEffect != null)
     				newOutfit.potions.add(newPotionEffect);
-    				
-    				System.out.println(newPotionEffect);
-    			}
     		}
     	}
     	

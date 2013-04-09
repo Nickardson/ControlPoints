@@ -39,14 +39,10 @@ public class Outfit {
 	public void applyPotions(Player player) {
 		for (PotionEffect potionEffect : potions) {
 			player.addPotionEffect(potionEffect, true);
-			System.out.println(potionEffect);
-			System.out.println(player.getActivePotionEffects());
 		}
 	}
 	
 	public void applyTo(Player player) {
-		System.out.println("Player: " + player);
-		System.out.println("Inventory: " + player.getInventory());
 		PlayerInventory inv = player.getInventory();
 		
 		//inv.setHelmet(helmet.clone());
@@ -59,7 +55,6 @@ public class Outfit {
 		
 		for (ItemStack item : items) {
 			inv.addItem(item);
-			//System.out.println("Adding item: " + item.toString());
 		}
 		
 		this.applyPotions(player);
