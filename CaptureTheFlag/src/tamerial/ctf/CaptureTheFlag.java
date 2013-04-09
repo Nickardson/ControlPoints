@@ -77,7 +77,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 						int blueMembers = capPoint.getNearbyPlayersOnTeam(3.5, game.teams, -1).size();
 						int redMembers = capPoint.getNearbyPlayersOnTeam(3.5, game.teams, 1).size();
 						
-						// Only run when capturing teams XOR == 0, but there are actually capturing teams
+						// Only run when there are members capturing, but not when there are members from both teams
 						if (!(blueMembers!=0 && redMembers!=0) && (blueMembers + redMembers > 0)) {
 							int capturingTeam = (blueMembers > redMembers) ? -1 : 1;
 							
@@ -219,7 +219,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     					}
     				}
     				else if (args[0].trim().equalsIgnoreCase("red")) {
-    					if (game.teams.getPlayersOnTeam(-1).size() <= game.teams.getPlayersOnTeam(1).size()) {
+    					if (game.teams.getPlayersOnTeam(1).size() <= game.teams.getPlayersOnTeam(-1).size()) {
     	    				game.teams.setTeam(sender.getName(), 1);
     	    				sender.sendMessage("You have joined the " + ChatColor.RED + "Red" + ChatColor.RESET + " team!");
     	    				
@@ -339,7 +339,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     			if (event.getDamager() instanceof Player) {
     				Player damagingPlayer = (Player)event.getDamager();
     				
-    				if (game.teams.onSameTeam(damagedPlayer.getName(), damagingPlayer.getName()))
+    				if (game.teams.onSameTeam(damagedPlayer.getName(), damagingPlayer.getName()) && !(damagedPlayer.getName().equals(damagingPlayer.getName())))
     					event.setCancelled(true);
     			}
     			else if (event.getDamager() instanceof Arrow) {
@@ -347,7 +347,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     				if (arrow.getShooter() instanceof Player) {
     					Player damagingPlayer = (Player)arrow.getShooter();
     					
-    					if (game.teams.onSameTeam(damagedPlayer.getName(), damagingPlayer.getName()))
+    					if (game.teams.onSameTeam(damagedPlayer.getName(), damagingPlayer.getName()) && !(damagedPlayer.getName().equals(damagingPlayer.getName())))
         					event.setCancelled(true);
     				}
     			}
