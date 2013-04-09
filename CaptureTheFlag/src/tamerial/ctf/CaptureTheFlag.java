@@ -14,10 +14,15 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByBlockEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -315,10 +320,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 	        		Outfit.getColoredLeather(
 	        				Material.LEATHER_HELMET, 
 	        				color,
-	        				Arrays.asList(
-	        						ChatColor.WHITE + event.getPlayer().getName() + "'s standard issue team identification hat" + ChatColor.RESET,
-	        						"Baldness, dry scalp, and/or death", 
-	        						"may occur upon removal of this accoutrement"))
+	        				Arrays.asList(ChatColor.WHITE + event.getPlayer().getName() + "'s standard issue team identification hat" + ChatColor.RESET))
 	        );
     	//}
     	
@@ -330,6 +332,40 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 	    for (PotionEffect effect : event.getPlayer().getActivePotionEffects()) {
 	    	event.getPlayer().removePotionEffect(effect.getType());
 	    }
+    }
+    
+    @EventHandler
+    public void onTakeDamage(EntityDamageByEntityEvent event) {
+    	if (event.getEntity() instanceof Player) {
+    		Player damagedPlayer = (Player)event.getEntity();
+    		
+    		if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.PROJECTILE) {
+    			if (event.getDamager() instanceof Player) {
+    				Player damagingPlayer = (Player)event.getDamager();
+    				
+    				if (game.teams.onSameTeam(damagedPlayer.getName(), damagingPlayer.getName()))
+    					event.setCancelled(true);
+    			}
+    			else if (event.getDamager() instanceof Arrow) {
+    				Arrow arrow = (Arrow)event.getDamager();
+    				if (arrow.getShooter() instanceof Player) {
+    					Player damagingPlayer = (Player)arrow.getShooter();
+    					
+    					if (game.teams.onSameTeam(damagedPlayer.getName(), damagingPlayer.getName()))
+        					event.setCancelled(true);
+    				}
+    			}
+    		}
+    		else if (event.getCause() == DamageCause.FALL) {
+    			if (selectedClasses.containsKey(damagedPlayer.getName())) {
+    				if (selectedClasses.get(damagedPlayer.getName()).equalsIgnoreCase("scout")) {
+    					event.setCancelled(true);
+    				}
+    			}
+    		}
+    		
+    		System.out.println("Player damaged by: " + event.getCause());
+    	}
     }
     
     @EventHandler
@@ -355,9 +391,12 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     		if (event.getItem() != null) {
 	    		if (event.getItem().getType() == Material.POTION) {
 	    			PotionMeta potionMeta = (PotionMeta)event.getItem().getItemMeta();
-	    			if (potionMeta.getDisplayName().equalsIgnoreCase("Cloak Potion")) {
-	    				System.out.println("Interacted with Cloak potion");
-	    				event.getPlayer().getInventory().setHelmet(null);
+	    			if (potionMeta.getDisplayName().equalsIgnoreCase("Cloaking Potion")) {
+	    				if (selectedClasses.containsKey(event.getPlayer().getName())) {
+	    					if (selectedClasses.get(event.getPlayer().getName()).equals("spy")) {
+	    						event.getPlayer().getInventory().setHelmet(null);
+			    			}
+	    				}
 	    			}
 	    		}
     		}

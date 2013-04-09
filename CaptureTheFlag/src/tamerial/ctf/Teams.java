@@ -68,4 +68,8 @@ public class Teams {
 			return "Red";
 		}
 	}
+	
+	public boolean onSameTeam(String a, String b) {
+		return getTeam(a) == getTeam(b);
+	}
 }
