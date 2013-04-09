@@ -1,0 +1,16 @@
+ctf:
+  blueSpawn: 0, 63, 0
+  redSpawn: 0, 63, 0
+  neutralSpawn: 0, 63, 0
+  capturePoints:
+  - 100, 63, 0
+  pointsBlue:
+  - -1
+  pointsRed:
+  - -1
+  blueWin:
+  - -1
+  redWin:
+  - -1
+  capturePer20Ticks: 0.2
+  mode: Capture All

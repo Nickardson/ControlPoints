@@ -1,0 +1,43 @@
+name: CaptureTheFlag
+main: tamerial.ctf.CaptureTheFlag
+version: 0.0
+commands:
+  start:
+    permission: ctf.start
+    description: Starts a round, regardless of how many players are online.
+    usage: /<command> [gamemode]
+  pause:
+    permission: ctf.pause
+    description: Pauses a game indefinitely
+  listmodes:
+    permission: ctf.listmodes
+    description: Lists the possible modes for a game
+  progress:
+    permission: ctf.progress
+    description: Progresses a capture point to a specific value
+    usage: /<command> [id] [value]
+  join:
+    description: Join a team, as long as joining won't make your team more than one person overpowered
+  forcejoin:
+    description: Join a team.
+  class:
+    description: Selects a class
+  
+permissions:
+  ctf.gamemaster:
+    default: op
+    children:
+      ctf.start: true
+      ctf.stop: true
+      ctf.listmodes: true
+  ctf.start:
+    default: op
+  ctf.pause:
+    default: op
+  ctf.stop:
+    default: op
+  ctf.listmodes:
+    default: op
+  ctf.progress:
+    default: op
+    
