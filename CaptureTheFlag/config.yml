@@ -1,32 +1,94 @@
 ctf:
-  blueSpawn: 0, 63, 0
-  redSpawn: 0, 63, 0
-  neutralSpawn: 0, 63, 0
+  blueSpawn: 0, 50, 0
+  redSpawn: 0, 50, 0
+  neutralSpawn: 0, 50, 0
   capturePoints:
-  - 100, 63, 0
+  - 60, 50, 0
+  - 80, 50, 0
+  - 100, 50, 0
   pointsBlue:
   - -1
   pointsRed:
   - -1
   blueWin:
-  - -1
+  - 0
+  - 1
+  - 2
   redWin:
-  - -1
+  - 0
+  - 1
+  - 2
   capturePer20Ticks: 0.2
-  mode: Capture All
+  mode: conquer
+  world: world
   outfits:
   - name: Warrior
+    description: A powerful tank with heavy armor
+    potions:
+    - effect: SLOW
     chestplate:
-      name: Warrior's Chestplate
-      color: 135, 111, 78
-      material: leather_chestplate
+      material: iron_chestplate
       enchants:
       - 4, 2
+      - 1, 1
+    leggings:
+      material: iron_leggings
     items:
-    - name: Sword of the Adept
+    - name: Warrior's Sword
       material: diamond_sword
-    - name: Elixr of Life
+    - name: Elixr of Life II
       material: potion
       damage: 16421
       count: 3
-  
+    - material: golden_apple
+      name: Packed lunch of restoration
+      count: 1
+  - name: Archer
+    chestplate:
+      material: leather_chestplate
+      color: 135, 111, 78
+      enchants:
+      - 4, 2
+    leggings:
+      material: leather_leggings
+      color: 54, 50, 46
+    boots:
+      material: leather_boots
+      color: 10, 10, 10
+    items:
+    - name: Archer's Sword
+      material: iron_sword
+    - name: Archer's Bow
+      material: bow
+      enchants:
+      - 48, 1
+    - name: Normal Arrow
+      material: arrow
+      count: 60
+    - material: golden_apple
+      name: Packed lunch of restoration
+      count: 2
+  - name: Spy
+    potions:
+    - effect: SPEED
+      amplifier: 0
+    boots:
+      name: Boots of Sneaking
+      material: chainmail_boots
+      enchants:
+      - 7, 2
+      - 34, 3
+    items:
+    - material: iron_sword
+      name: Spy's Iron Sword of Stabby Stabby
+    - name: Cloaking potion
+      material: potion
+      damage: 8206
+      count: 2
+    - name: Vision potion
+      material: potion
+      damage: 8198
+      count: 2
+    - name: Packed lunch
+      material: apple
+      count: 4

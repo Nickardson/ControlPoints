@@ -201,7 +201,7 @@ public class ConfigLoader {
     	if (map.containsKey("effect")) {
     		PotionEffectType type = PotionEffectType.getByName(((String)map.get("effect")).trim().toUpperCase());
     		
-    		int duration = 2000;
+    		int duration = 30 * 20;
     		int amplifier = 0;
     		
     		if (map.containsKey("duration")) {
@@ -231,6 +231,14 @@ public class ConfigLoader {
     	
     	if (map.containsKey("name")) {
     		newOutfit.name = (String)map.get("name");
+    	}
+    	
+    	if (map.containsKey("helmet")) {
+    		newOutfit.helmet = (Boolean)map.get("helmet");
+    	}
+    	
+    	if (map.containsKey("teamLeather")) {
+    		newOutfit.colorAllLeatherToTeam = (Boolean)map.get("teamLeather");
     	}
     	
     	if (map.containsKey("chestplate")) {

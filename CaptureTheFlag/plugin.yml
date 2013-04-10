@@ -9,6 +9,10 @@ commands:
   pause:
     permission: ctf.pause
     description: Pauses a game indefinitely
+  gametime:
+    permission: ctf.gametime
+    description: Changes the time remaining in the game.
+    usage: /<command> [time]
   listmodes:
     permission: ctf.listmodes
     description: Lists the possible modes for a game
@@ -33,13 +37,15 @@ permissions:
     default: op
     children:
       ctf.start: true
-      ctf.stop: true
+      ctf.pause: true
       ctf.listmodes: true
+      ctf.gametime: true
+      ctf.forcejoin: true
   ctf.start:
     default: op
   ctf.pause:
     default: op
-  ctf.stop:
+  ctf.gametime:
     default: op
   ctf.forcejoin:
     default: op

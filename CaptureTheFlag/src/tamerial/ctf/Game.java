@@ -5,10 +5,13 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
 
 public class Game {
 	public Game(Teams teams, CapturePoints capturePoints) {
@@ -18,11 +21,21 @@ public class Game {
 		setBlueRequiredCaptures(new ArrayList<Integer>());
 		setRedRequiredCaptures(new ArrayList<Integer>());
 		
-		this.ignoreDeathsFor = new ArrayList<String>();
+		new ArrayList<String>();
 		
 		this.outfits = new HashMap<String, Outfit>();
 		this.selectedClasses = new HashMap<String, String>();
 	}
+	
+	public GameMode gameMode = GameMode.CONQUER;
+	public static String world = "world";
+	
+	public Scoreboard scoreboard;
+	public org.bukkit.scoreboard.Team redTeam;
+	public org.bukkit.scoreboard.Team blueTeam;
+	public Objective scoreboardObjective;
+	
+	public int timeLeft = 60 * 15;
 	
 	public double capturePer20Ticks = 1;
 	public Map<String, Outfit> outfits;
@@ -30,8 +43,6 @@ public class Game {
 	
 	private ArrayList<Integer> blueRequiredCaptures;
 	private ArrayList<Integer> redRequiredCaptures;
-	
-	private ArrayList<String> ignoreDeathsFor;
 	
 	public Location blueSpawn;
 	public Location redSpawn;
@@ -83,6 +94,13 @@ public class Game {
 		isGameOver = true;
 		gameOverTicks = 0;
 		canAutoRespawn = false;
+		timeLeft = 60 * 15;
+		
+		for (Player player : Bukkit.getWorld(Game.world).getPlayers()) {
+			player.teleport(this.neutralSpawn);
+		}
+		
+		Game.broadcast("Starting new game in 20 seconds, select your class!");
 	}
 	
 	/**
@@ -94,7 +112,7 @@ public class Game {
 		canAutoRespawn = true;
 		forceStart = false;
 		forcePause = false;
-		
+		timeLeft = 60 * 15;
 		this.prepareCapturePoints(config);
 	}
 
@@ -169,9 +187,10 @@ public class Game {
 			
 			// TODO: Only kill if game is started and player is not in box
 			double distanceToSpawn = player.getLocation().distanceSquared(this.neutralSpawn);
-
-			if (this.canAutoRespawn) {
-				player.setHealth(0);
+			if (distanceToSpawn > 100) {
+				if (this.canAutoRespawn) {
+					player.setHealth(0);
+				}
 			}
 			
 			player.sendMessage(ChatColor.GREEN + "Class changed to " + formattedClass + ChatColor.RESET);
@@ -181,6 +200,88 @@ public class Game {
 		else {
 			player.sendMessage(ChatColor.RED + "Invalid class name.  Use /class to view available classes" + ChatColor.RESET);
 			return false;
+		}
+	}
+	
+	/**
+	 * Gets the team who has won.  This does not mean the team that is in the lead.
+	 * A return value of 0 means no team has yet won.
+	 * A non-zero return value means the game should end. 
+	 * @return
+	 */
+	public int getWinningTeam() {
+		/*
+		// If it is not possible for a team to win by captures, then don't count captures for that team
+		boolean blueHasAll = (this.getBlueRequiredCaptures().size() != 0);
+		boolean redHasAll = (this.getRedRequiredCaptures().size() != 0);
+		
+		blueHasAll = this.getCapturePoints().isTeamFullyCaptured(this, -1);
+		redHasAll = this.getCapturePoints().isTeamFullyCaptured(this, 1);
+		
+		// Determine winner
+		if ((blueHasAll || redHasAll) && !(blueHasAll && redHasAll)) {
+			return blueHasAll ? -1 : 1;
+		}
+		else {
+			return 0;
+		}
+		*/
+		
+		if (gameMode == GameMode.CONQUER) {
+			if (this.capturePoints.getCaptured(-1).size() == this.capturePoints.size()) {
+				return -1;
+			}
+			else if (this.capturePoints.getCaptured(1).size() == this.capturePoints.size()) {
+				return 1;
+			}
+		}
+		else if (gameMode == GameMode.DEFEND) {
+			if (this.capturePoints.getCaptured(1).size() >= this.capturePoints.size()) {
+				return 1;
+			}
+			else if (this.timeLeft <= 0) {
+				// The time has run out but Red doesn't have all points, blue wins
+				return -1;
+			}
+		}
+		
+		return 0;
+	}
+	
+	/**
+	 * Gets the team who is in the lead, E.G. who would win if the time ended without the objective completed
+	 * A return value of 0 is less likely than with getWinningTeam, but still possible at the start
+	 * @return
+	 */
+	public int getLeadingTeam() {
+		if (gameMode == GameMode.CONQUER) {
+			int blueCaptured = this.capturePoints.getCaptured(-1).size();
+			int redCaptured = this.capturePoints.getCaptured(1).size();
+			
+			// Captured points count for 20 points, uncaptured count for the amount they current are leaning.
+			double total = this.capturePoints.getCaptureAmount(0) + (-4 * blueCaptured) +  (4 * redCaptured);
+			
+			return (int) Math.signum(total);
+		}
+		else if (gameMode == GameMode.DEFEND) {
+			// If Red team has captured all of the points, Return red, otherwise blue is still winning
+			if (this.capturePoints.getCaptured(1).size() >= this.capturePoints.size()) {
+				return 1;
+			}
+			else {
+				return -1;
+			}
+		}
+		return 0;
+	}
+	
+	/**
+	 * Broadcasts a message to all players in the game world.
+	 * @param message
+	 */
+	public static void broadcast(String message) {
+		for (Player player : Bukkit.getWorld(Game.world).getPlayers()) {
+			player.sendMessage(message);
 		}
 	}
 }

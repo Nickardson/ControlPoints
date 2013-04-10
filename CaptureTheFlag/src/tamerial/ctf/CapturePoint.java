@@ -156,7 +156,7 @@ public class CapturePoint {
 			id = 22;
 		}
 		
-		Bukkit.getWorld("world").getBlockAt(x, y, z).setTypeId(id);
+		Bukkit.getWorld(Game.world).getBlockAt(x, y, z).setTypeId(id);
 	}
 	
 	public void setTeamBlock(Location loc, int team) {

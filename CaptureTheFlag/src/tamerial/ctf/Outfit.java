@@ -12,6 +12,9 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.potion.PotionEffect;
 
 public class Outfit {
+	public static Color redColor = Color.fromRGB(242, 61, 61);
+	public static Color blueColor = Color.fromRGB(44, 98, 222);
+	
 	public static ItemStack getColoredLeather(Material leatherPart, Color color, List<String> lore) {
 		ItemStack item = new ItemStack(leatherPart);
     	LeatherArmorMeta armorMeta = (LeatherArmorMeta)item.getItemMeta();
@@ -26,11 +29,13 @@ public class Outfit {
 		potions = new ArrayList<PotionEffect>();
 	}
 	
-	//public ItemStack helmet;
+	public boolean helmet = true;
 	public ItemStack chestplate;
 	public ItemStack leggings;
 	public ItemStack boots;
 	public List<ItemStack> items;
+	
+	public boolean colorAllLeatherToTeam = false;
 	
 	public String name;
 	
@@ -42,16 +47,42 @@ public class Outfit {
 		}
 	}
 	
-	public void applyTo(Player player) {
+	public void applyTo(Player player, int team) {
 		PlayerInventory inv = player.getInventory();
 		
+		Color leatherColor = Color.WHITE;
+		
+		if (team == -1)
+			leatherColor = Outfit.blueColor;
+		
+		if (team == 1)
+			leatherColor = Outfit.redColor;
+		
 		//inv.setHelmet(helmet.clone());
-		if (chestplate != null)
-			inv.setChestplate(chestplate.clone());
-		if (leggings != null)
-			inv.setLeggings(leggings.clone());
-		if (boots != null)
-			inv.setBoots(boots.clone());
+		if (chestplate != null) {
+			if (colorAllLeatherToTeam) {
+				inv.setChestplate(Outfit.colorLeatherArmor(chestplate.clone(), leatherColor));
+			}
+			else {
+				inv.setChestplate(chestplate.clone());
+			}
+		}
+		if (leggings != null) {
+			if (colorAllLeatherToTeam) {
+				inv.setLeggings(Outfit.colorLeatherArmor(leggings.clone(), leatherColor));
+			}
+			else {
+				inv.setLeggings(leggings.clone());
+			}
+		}
+		if (boots != null) {
+			if (colorAllLeatherToTeam) {
+				inv.setBoots(Outfit.colorLeatherArmor(boots.clone(), leatherColor));
+			}
+			else {
+				inv.setBoots(boots.clone());
+			}
+		}
 		
 		for (ItemStack item : items) {
 			inv.addItem(item);
@@ -89,4 +120,19 @@ public class Outfit {
     	
     	return false;
     }
+	
+	/**
+	 * If the item is leather, then colors the item
+	 * @param item
+	 * @param color
+	 * @return
+	 */
+	public static ItemStack colorLeatherArmor(ItemStack item, Color color) {
+		if (Outfit.isItemLeatherArmor(item)) {
+			LeatherArmorMeta meta = (LeatherArmorMeta)item.getItemMeta();
+			meta.setColor(color);
+			item.setItemMeta(meta);
+		}
+		return item;
+	}
 }
