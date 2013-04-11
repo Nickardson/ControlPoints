@@ -36,12 +36,11 @@ ctf:
     items:
     - name: Warrior's Sword
       material: diamond_sword
-    - name: Elixr of Life II
-      material: potion
+    - material: potion
       damage: 16421
-      count: 3
+      count: 2
     - material: golden_apple
-      name: Packed lunch of restoration
+      name: Apple of restoration
       count: 1
   - name: Archer
     chestplate:
@@ -66,29 +65,30 @@ ctf:
       material: arrow
       count: 60
     - material: golden_apple
-      name: Packed lunch of restoration
+      name: Apple of restoration
       count: 2
   - name: Spy
     potions:
     - effect: SPEED
       amplifier: 0
+    - effect: INVISIBILITY
+      amplifier: 1
+    - effect: NIGHT_VISION
+    helmet: false
+    teamLeather: true
     boots:
       name: Boots of Sneaking
-      material: chainmail_boots
+      material: leather_boots
       enchants:
       - 7, 2
       - 34, 3
     items:
     - material: iron_sword
-      name: Spy's Iron Sword of Stabby Stabby
-    - name: Cloaking potion
+      name: Spy's Stabby Stabby Sword
+    - name: Assassination Splash potion
       material: potion
-      damage: 8206
+      damage: 16388
       count: 2
-    - name: Vision potion
-      material: potion
-      damage: 8198
-      count: 2
-    - name: Packed lunch
-      material: apple
+    - name: Red Herring
+      material: cooked_fish
       count: 4
