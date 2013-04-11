@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 public class Teams {
@@ -20,23 +19,7 @@ public class Teams {
 	public void setTeam(Game game, String player, int team) {
 		playerTeams.put(player, new Integer(team));
 		
-		OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(player);
-		
-		if (team == -1) {
-			if (game.redTeam.hasPlayer(offlinePlayer)) {
-				game.redTeam.removePlayer(offlinePlayer);
-			}
-			
-			game.blueTeam.addPlayer(offlinePlayer);
-			
-		}
-		else if (team == 1) {
-			if (game.blueTeam.hasPlayer(offlinePlayer)) {
-				game.blueTeam.removePlayer(offlinePlayer);
-			}
-			
-			game.redTeam.addPlayer(offlinePlayer);
-		}
+		game.gameScoreboard.setTeam(Bukkit.getOfflinePlayer(player), team);
 	}
 	
 	/**

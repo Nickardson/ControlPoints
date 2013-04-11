@@ -12,14 +12,12 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -29,16 +27,10 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
-import org.bukkit.scoreboard.ScoreboardManager;
 
 public class CaptureTheFlag extends JavaPlugin implements Listener {
 	public Game game;
 	double accumulatedTicks = 0;
-	int redWins = 0;
-	int blueWins = 0;
 	
 	@Override
     public void onEnable(){
@@ -75,38 +67,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 		
 		
 		// Prepare scoreboards
-		ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
-		game.scoreboard = scoreboardManager.getNewScoreboard();
-		game.redTeam = game.scoreboard.registerNewTeam("Red");
-		game.redTeam.setPrefix(ChatColor.RED+"");
-		game.redTeam.setCanSeeFriendlyInvisibles(true);
-		game.redTeam.setAllowFriendlyFire(false);
-		
-		game.blueTeam = game.scoreboard.registerNewTeam("Blue");
-		game.blueTeam.setPrefix(ChatColor.BLUE+"");
-		game.blueTeam.setCanSeeFriendlyInvisibles(true);
-		game.blueTeam.setAllowFriendlyFire(false);
-		
-		Objective objective = game.scoreboard.registerNewObjective("test", "playerKillCount");
-		objective.setDisplaySlot(DisplaySlot.PLAYER_LIST);
-		objective.setDisplayName("Kills");
-		
-		game.scoreboardObjective = game.scoreboard.registerNewObjective("stats", "dummy");
-		game.scoreboardObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
-		game.scoreboardObjective.setDisplayName("Stats");
-		
-		Score score = game.scoreboardObjective.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Time:"));
-		score.setScore(game.timeLeft);
-		
-		Score score1 = game.scoreboardObjective.getScore(Bukkit.getOfflinePlayer(ChatColor.RED + "Red Wins:"));
-		score1.setScore(redWins);
-		
-		Score score2 = game.scoreboardObjective.getScore(Bukkit.getOfflinePlayer(ChatColor.BLUE + "Blue Wins:"));
-		score2.setScore(blueWins);
-		
-		for (Player player : Bukkit.getWorld(Game.world).getPlayers()) {
-			player.setScoreboard(game.scoreboard);
-		}
+		game.gameScoreboard = new GameScoreboard(game);
 		
 		// Periodic game update
 		final FileConfiguration runnableConfig = this.getConfig();
@@ -114,8 +75,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 
 			@Override
 			public void run() {
-				Score score = game.scoreboardObjective.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Time:")); //Get a fake offline player
-				score.setScore(game.timeLeft);
+				game.gameScoreboard.setScore(ChatColor.GREEN + "Time:", game.timeLeft);
 				
 				if (!game.isGameOver) {
 					// Timing logic
@@ -140,17 +100,13 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 								Game.broadcast("The " + ((winningTeam == -1) ? (ChatColor.BLUE + "Blue") : (ChatColor.RED + "Red")) + ChatColor.RESET + " team has won!");
 								
 								if (winningTeam == -1)
-									blueWins++;
+									game.blueWins++;
 								
 								if (winningTeam == 1)
-									redWins++;
+									game.redWins++;
 								
-								Score score1 = game.scoreboardObjective.getScore(Bukkit.getOfflinePlayer(ChatColor.RED + "Red Wins:"));
-								score1.setScore(redWins);
-								
-								Score score2 = game.scoreboardObjective.getScore(Bukkit.getOfflinePlayer(ChatColor.BLUE + "Blue Wins:"));
-								score2.setScore(blueWins);
-								
+								game.gameScoreboard.setScore(ChatColor.RED + "Red Wins:", game.redWins);
+								game.gameScoreboard.setScore(ChatColor.BLUE + "Blue Wins:", game.blueWins);
 							}
 							else {
 								Game.broadcast(ChatColor.GREEN + "Neither team won this round.");
@@ -190,16 +146,13 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 						Game.broadcast("The " + ((winningTeam == -1) ? (ChatColor.BLUE + "Blue") : (ChatColor.RED + "Red")) + ChatColor.RESET + " team has won!");
 						
 						if (winningTeam == -1)
-							blueWins++;
+							game.blueWins++;
 						
 						if (winningTeam == 1)
-							redWins++;
+							game.redWins++;
 						
-						Score score1 = game.scoreboardObjective.getScore(Bukkit.getOfflinePlayer(ChatColor.RED + "Red Wins:"));
-						score1.setScore(redWins);
-						
-						Score score2 = game.scoreboardObjective.getScore(Bukkit.getOfflinePlayer(ChatColor.BLUE + "Blue Wins:"));
-						score2.setScore(blueWins);
+						game.gameScoreboard.setScore(ChatColor.RED + "Red Wins:", game.redWins);
+						game.gameScoreboard.setScore(ChatColor.BLUE + "Blue Wins:", game.blueWins);
 						
 						game.end();
 					}
@@ -382,7 +335,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     	if (!event.getPlayer().getWorld().getName().equals(Game.world))
     		return;
     	
-    	event.getPlayer().setScoreboard(game.scoreboard);
+    	game.gameScoreboard.showScoreboard(event.getPlayer());
     }
     
     @EventHandler
@@ -449,7 +402,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 	    	outfit.applyTo(event.getPlayer(), playerTeam);
 	    }
 	    
-	    event.getPlayer().setScoreboard(game.scoreboard);
+	    game.gameScoreboard.showScoreboard(event.getPlayer());
     }
     
     @EventHandler

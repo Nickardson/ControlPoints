@@ -10,8 +10,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
 
 public class Game {
 	public Game(Teams teams, CapturePoints capturePoints) {
@@ -30,13 +28,10 @@ public class Game {
 	public GameMode gameMode = GameMode.CONQUER;
 	public static String world = "world";
 	
-	public Scoreboard scoreboard;
-	public org.bukkit.scoreboard.Team redTeam;
-	public org.bukkit.scoreboard.Team blueTeam;
-	public Objective scoreboardObjective;
-	
 	public int timeLeft = 60 * 15;
-	
+	public int redWins = 0;
+	public int blueWins = 0;
+
 	public double capturePer20Ticks = 1;
 	public Map<String, Outfit> outfits;
 	public Map<String, String> selectedClasses;
@@ -48,6 +43,7 @@ public class Game {
 	public Location redSpawn;
 	public Location neutralSpawn;
 	
+	public GameScoreboard gameScoreboard;
 	
 	/**
 	 * The teamservice
@@ -95,6 +91,8 @@ public class Game {
 		gameOverTicks = 0;
 		canAutoRespawn = false;
 		timeLeft = 60 * 15;
+		
+		
 		
 		for (Player player : Bukkit.getWorld(Game.world).getPlayers()) {
 			player.teleport(this.neutralSpawn);
