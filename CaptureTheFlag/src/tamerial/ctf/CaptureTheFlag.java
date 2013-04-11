@@ -1,46 +1,33 @@
 package tamerial.ctf;
 
-import java.util.Arrays;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Color;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryType.SlotType;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionEffect;
 
 public class CaptureTheFlag extends JavaPlugin implements Listener {
 	public Game game;
 	double accumulatedTicks = 0;
+	public EventListener eventListener;
 	
 	@Override
     public void onEnable(){
 		this.saveDefaultConfig();
 		
 		game = new Game(new Teams(), new CapturePoints());
+		eventListener = new EventListener();
+		eventListener.setGame(game);
 		
-		if (getConfig().getString("ctf.world") != null) {
+		if (getConfig().getString("ctf.world") != null)
 			Game.world = getConfig().getString("ctf.world");
-		}
+		
 		
 		// Load spawn coordinates
 		game.blueSpawn = ConfigLoader.getCoordsLocation(Bukkit.getWorld(Game.world), this.getConfig().getString("ctf.blueSpawn"));
@@ -204,7 +191,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 			game.outfits.put(newOutfit.name.trim().toLowerCase(), newOutfit);
 		}
 		
-		getServer().getPluginManager().registerEvents(this, this);
+		getServer().getPluginManager().registerEvents(eventListener, this);
     }
 	
     @Override
@@ -236,7 +223,6 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     			} 
     			catch (Exception err) {
     				sender.sendMessage(ChatColor.RED + "Failed to execute, is the flag ID out of bounds?" + ChatColor.RESET);
-    				
     				return false;
     			}
     		}
@@ -244,7 +230,6 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     	else if (cmd.getName().equalsIgnoreCase("join")) {
     		if (sender instanceof Player) {
     			if (args.length >= 1) {
-    				// TODO: Add forced-balancing
     				if (args[0].trim().equalsIgnoreCase("blue")) {
     					//if (game.teams.getPlayersOnTeam(-1).size() <= game.teams.getPlayersOnTeam(1).size()) {
 	    					game.teams.setTeam(game, sender.getName(), -1);
@@ -257,16 +242,16 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     					//}
     				}
     				else if (args[0].trim().equalsIgnoreCase("red")) {
-    					if (game.teams.getPlayersOnTeam(1).size() <= game.teams.getPlayersOnTeam(-1).size()) {
+    					//if (game.teams.getPlayersOnTeam(1).size() <= game.teams.getPlayersOnTeam(-1).size()) {
     	    				game.teams.setTeam(game, sender.getName(), 1);
     	    				sender.sendMessage("You have joined the " + ChatColor.RED + "Red" + ChatColor.RESET + " team!");
     	    				
     	    				return true;
-	    				}
-						else {
-							sender.sendMessage(ChatColor.RED + "You cannot make the teams unbalanced by more than 1 player." + ChatColor.RESET);
-							return true;
-						}
+	    				//}
+						//else {
+						//	sender.sendMessage(ChatColor.RED + "You cannot make the teams unbalanced by more than 1 player." + ChatColor.RESET);
+						//	return true;
+						//}
     				}
     				else {
     					return false;
@@ -328,175 +313,5 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     		}
     	}
     	return false; 
-    }
-    
-    @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
-    	if (!event.getPlayer().getWorld().getName().equals(Game.world))
-    		return;
-    	
-    	game.gameScoreboard.showScoreboard(event.getPlayer());
-    }
-    
-    @EventHandler
-    public void onMove(PlayerMoveEvent event) {
-    	if (!event.getPlayer().getWorld().getName().equals(Game.world))
-    		return;
-    	
-    	if (game.canAutoRespawn) {
-	    	Player player = event.getPlayer();
-	    	String playerName = player.getName();
-	    	if (player.getLocation().distanceSquared(game.neutralSpawn) < 100) {
-	    		if (game.selectedClasses.containsKey(playerName)) {
-		    		int team = game.teams.getTeam(playerName);
-		    		
-		    		if (team == -1)
-		    			player.teleport(game.blueSpawn.clone().add(0, 3, 0));
-		    		
-		    		if (team == 1)
-		    			player.teleport(game.redSpawn.clone().add(0, 3, 0));
-	    		}
-	    	}
-    	}
-    }
-    
-    @EventHandler
-    public void onRespawn(PlayerRespawnEvent event) {
-    	if (!event.getPlayer().getWorld().getName().equals(Game.world))
-    		return;
-    	
-    	boolean helmet = true;
-    	Outfit outfit = null;
-		if (game.selectedClasses.containsKey(event.getPlayer().getName())) {
-			outfit = game.outfits.get(game.selectedClasses.get(event.getPlayer().getName()));
-			helmet = outfit.helmet;
-		}
-		
-    	int playerTeam = game.teams.getTeam(event.getPlayer().getName());
-    	//if (playerTeam != 0) {
-    		Color color = Color.WHITE;
-    		
-    		if (playerTeam == -1) {
-    			color = Outfit.blueColor;
-    		}
-    		else if (playerTeam == 1) {
-    			color = Outfit.redColor;
-    		}
-    		
-	        if (helmet) {
-	        	event.getPlayer().getInventory().setHelmet(
-	        		Outfit.getColoredLeather(
-	        				Material.LEATHER_HELMET, 
-	        				color,
-	        				Arrays.asList(ChatColor.WHITE + event.getPlayer().getName() + "'s standard issue team identification hat" + ChatColor.RESET))
-	        			);
-	        }
-    	//}
-    	
-	    // Remove all potion effects
-	    for (PotionEffect effect : event.getPlayer().getActivePotionEffects()) {
-	    	event.getPlayer().removePotionEffect(effect.getType());
-	    }
-	    
-	    if (outfit != null) {
-	    	outfit.applyTo(event.getPlayer(), playerTeam);
-	    }
-	    
-	    game.gameScoreboard.showScoreboard(event.getPlayer());
-    }
-    
-    @EventHandler
-    public void onTakeDamage(EntityDamageByEntityEvent event) {
-    	if (!event.getEntity().getWorld().getName().equals(Game.world))
-    		return;
-    	
-    	if (event.getEntity() instanceof Player) {
-    		Player damagedPlayer = (Player)event.getEntity();
-    		
-    		if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.PROJECTILE) {
-    			if (event.getDamager() instanceof Player) {
-    				Player damagingPlayer = (Player)event.getDamager();
-    				
-    				if (game.teams.onSameTeam(damagedPlayer.getName(), damagingPlayer.getName()) && !(damagedPlayer.getName().equals(damagingPlayer.getName())))
-    					event.setCancelled(true);
-    			}
-    			else if (event.getDamager() instanceof Arrow) {
-    				Arrow arrow = (Arrow)event.getDamager();
-    				if (arrow.getShooter() instanceof Player) {
-    					Player damagingPlayer = (Player)arrow.getShooter();
-    					
-    					if (game.teams.onSameTeam(damagedPlayer.getName(), damagingPlayer.getName()) && !(damagedPlayer.getName().equals(damagingPlayer.getName())))
-        					event.setCancelled(true);
-    				}
-    				
-    				// TODO: Test damaging
-    				if (game.selectedClasses.containsKey(damagedPlayer.getName())) {
-	    				if (game.selectedClasses.get(damagedPlayer.getName()).equalsIgnoreCase("spy")) {
-	    					event.setCancelled(true);
-	    					
-	    					damagedPlayer.damage(event.getDamage(), ((Arrow)event.getDamager()).getShooter());
-	    				}
-	    			}
-    			}
-    		}
-    		else if (event.getCause() == DamageCause.FALL) {
-    			if (game.selectedClasses.containsKey(damagedPlayer.getName())) {
-    				if (game.selectedClasses.get(damagedPlayer.getName()).equalsIgnoreCase("scout")) {
-    					event.setCancelled(true);
-    				}
-    			}
-    		}
-    	}
-    }
-    
-    @EventHandler
-    public void onDied(PlayerDeathEvent event) {
-    	if (!event.getEntity().getWorld().getName().equals(Game.world))
-    		return;
-    	
-    	// Remove all potion effects, which fixes the infinite invisibility bug
-	    for (PotionEffect effect : event.getEntity().getActivePotionEffects()) {
-	    	event.getEntity().removePotionEffect(effect.getType());
-	    }
-	    
-	    event.getDrops().clear();
-    }
-    
-    @EventHandler
-    public void onChangeArmor(InventoryClickEvent event) {
-    	if (!event.getWhoClicked().getWorld().getName().equals(Game.world))
-    		return;
-    	
-    	if (event.getSlotType() == SlotType.ARMOR || Outfit.isItemArmor(event.getCursor())) {
-    		event.setCancelled(true);
-    	}
-    }
-    
-    @EventHandler
-    public void onInteract(PlayerInteractEvent event) {
-    	if (!event.getPlayer().getWorld().getName().equals(Game.world))
-    		return;
-    	
-    	if (event.hasItem()) {
-    		if (event.getItem() != null) {
-	    		if (event.getItem().getType() == Material.POTION) {
-	    			try {
-		    			PotionMeta potionMeta = (PotionMeta)event.getItem().getItemMeta();
-		    			if (potionMeta.hasDisplayName()) {
-			    			if (potionMeta.getDisplayName().equalsIgnoreCase("Cloaking Potion")) {
-			    				if (game.selectedClasses.containsKey(event.getPlayer().getName())) {
-			    					if (game.selectedClasses.get(event.getPlayer().getName()).equals("spy")) {
-			    						event.getPlayer().getInventory().setHelmet(null);
-					    			}
-			    				}
-			    			}
-		    			}
-	    			}
-	    			catch (NullPointerException ex) {
-	    				// TODO: Ensure this can be removed
-	    			}
-	    		}
-    		}
-    	}
     }
 }

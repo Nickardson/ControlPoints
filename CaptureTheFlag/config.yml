@@ -38,7 +38,7 @@ ctf:
       material: diamond_sword
     - material: potion
       damage: 16421
-      count: 2
+      count: 3
     - material: golden_apple
       name: Apple of restoration
       count: 1
@@ -85,6 +85,8 @@ ctf:
     items:
     - material: iron_sword
       name: Spy's Stabby Stabby Sword
+      enchants:
+      - 17, 2
     - name: Assassination Splash potion
       material: potion
       damage: 16388
