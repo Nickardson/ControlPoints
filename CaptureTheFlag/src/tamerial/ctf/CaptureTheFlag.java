@@ -379,11 +379,17 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
+    	if (!event.getPlayer().getWorld().getName().equals(Game.world))
+    		return;
+    	
     	event.getPlayer().setScoreboard(game.scoreboard);
     }
     
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
+    	if (!event.getPlayer().getWorld().getName().equals(Game.world))
+    		return;
+    	
     	if (game.canAutoRespawn) {
 	    	Player player = event.getPlayer();
 	    	String playerName = player.getName();
@@ -403,6 +409,9 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     
     @EventHandler
     public void onRespawn(PlayerRespawnEvent event) {
+    	if (!event.getPlayer().getWorld().getName().equals(Game.world))
+    		return;
+    	
     	boolean helmet = true;
     	Outfit outfit = null;
 		if (game.selectedClasses.containsKey(event.getPlayer().getName())) {
@@ -445,18 +454,11 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     
     @EventHandler
     public void onTakeDamage(EntityDamageByEntityEvent event) {
+    	if (!event.getEntity().getWorld().getName().equals(Game.world))
+    		return;
+    	
     	if (event.getEntity() instanceof Player) {
     		Player damagedPlayer = (Player)event.getEntity();
-    		
-    		if (event.getCause() == DamageCause.PROJECTILE) {
-    			if (game.selectedClasses.containsKey(damagedPlayer.getName())) {
-    				if (game.selectedClasses.get(damagedPlayer.getName()).equalsIgnoreCase("spy")) {
-    					event.setCancelled(true);
-    					
-    					damagedPlayer.damage(8, ((Arrow)event.getDamager()).getShooter());
-    				}
-    			}
-    		}
     		
     		if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.PROJECTILE) {
     			if (event.getDamager() instanceof Player) {
@@ -473,6 +475,15 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     					if (game.teams.onSameTeam(damagedPlayer.getName(), damagingPlayer.getName()) && !(damagedPlayer.getName().equals(damagingPlayer.getName())))
         					event.setCancelled(true);
     				}
+    				
+    				// TODO: Test damaging
+    				if (game.selectedClasses.containsKey(damagedPlayer.getName())) {
+	    				if (game.selectedClasses.get(damagedPlayer.getName()).equalsIgnoreCase("spy")) {
+	    					event.setCancelled(true);
+	    					
+	    					damagedPlayer.damage(event.getDamage(), ((Arrow)event.getDamager()).getShooter());
+	    				}
+	    			}
     			}
     		}
     		else if (event.getCause() == DamageCause.FALL) {
@@ -487,6 +498,9 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     
     @EventHandler
     public void onDied(PlayerDeathEvent event) {
+    	if (!event.getEntity().getWorld().getName().equals(Game.world))
+    		return;
+    	
     	// Remove all potion effects, which fixes the infinite invisibility bug
 	    for (PotionEffect effect : event.getEntity().getActivePotionEffects()) {
 	    	event.getEntity().removePotionEffect(effect.getType());
@@ -497,6 +511,9 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     
     @EventHandler
     public void onChangeArmor(InventoryClickEvent event) {
+    	if (!event.getWhoClicked().getWorld().getName().equals(Game.world))
+    		return;
+    	
     	if (event.getSlotType() == SlotType.ARMOR || Outfit.isItemArmor(event.getCursor())) {
     		event.setCancelled(true);
     	}
@@ -504,30 +521,29 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
+    	if (!event.getPlayer().getWorld().getName().equals(Game.world))
+    		return;
+    	
     	if (event.hasItem()) {
     		if (event.getItem() != null) {
 	    		if (event.getItem().getType() == Material.POTION) {
-	    			PotionMeta potionMeta = (PotionMeta)event.getItem().getItemMeta();
-	    			if (potionMeta.getDisplayName().equalsIgnoreCase("Cloaking Potion")) {
-	    				if (game.selectedClasses.containsKey(event.getPlayer().getName())) {
-	    					if (game.selectedClasses.get(event.getPlayer().getName()).equals("spy")) {
-	    						event.getPlayer().getInventory().setHelmet(null);
+	    			try {
+		    			PotionMeta potionMeta = (PotionMeta)event.getItem().getItemMeta();
+		    			if (potionMeta.hasDisplayName()) {
+			    			if (potionMeta.getDisplayName().equalsIgnoreCase("Cloaking Potion")) {
+			    				if (game.selectedClasses.containsKey(event.getPlayer().getName())) {
+			    					if (game.selectedClasses.get(event.getPlayer().getName()).equals("spy")) {
+			    						event.getPlayer().getInventory().setHelmet(null);
+					    			}
+			    				}
 			    			}
-	    				}
+		    			}
+	    			}
+	    			catch (NullPointerException ex) {
+	    				// TODO: Ensure this can be removed
 	    			}
 	    		}
     		}
     	}
     }
-    
-    @EventHandler
-    public void onProjectileHit(ProjectileHitEvent event) {
-    	// Remove the arrows that stick to you on death
-    	
-    	if (event.getEntity().getType() == EntityType.ARROW) {
-    		event.getEntity().remove();
-    	}
-    }
-    
-    
 }
