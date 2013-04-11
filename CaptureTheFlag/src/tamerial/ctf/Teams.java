@@ -67,10 +67,26 @@ public class Teams {
 		}
 	}
 	
+	/**
+	 * Gets whether two players are on the same team
+	 * @param a
+	 * The name of one player
+	 * @param b
+	 * The name of another player
+	 * @return
+	 * Whether they are on the same team
+	 */
 	public boolean onSameTeam(String a, String b) {
 		return getTeam(a) == getTeam(b);
 	}
 	
+	/**
+	 * Gets a list of the players who are on the given team.
+	 * @param team
+	 * The team ID
+	 * @return
+	 * The list of players on that team
+	 */
 	public ArrayList<Player> getPlayersOnTeam(int team) {
 		ArrayList<Player> players = new ArrayList<Player>();
 		

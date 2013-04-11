@@ -82,15 +82,40 @@ public class GameScoreboard {
 		}
 	}
 	
+	/**
+	 * Shows the scoreboard to a player
+	 * @param player
+	 */
 	public void showScoreboard(Player player) {
 		player.setScoreboard(this.scoreboard);
 	}
 	
+	/**
+	 * Hides the scoreboard from a player.
+	 * @param player
+	 */
+	public void hideScoreboard(Player player) {
+		player.setScoreboard(null);
+	}
+	
+	/**
+	 * Gets the score stored in a certain name.
+	 * @param field
+	 * The name of the field (offlineplayer name)
+	 * @return
+	 * The score
+	 */
 	public int getScore(String field) {
 		Score score = scoreboardObjective.getScore(Bukkit.getOfflinePlayer(field));
 		return score.getScore();
 	}
 	
+	/**
+	 * Sets the score stored in a certain name
+	 * @param field
+	 * The name of the field(offlineplayer name)
+	 * @param value
+	 */
 	public void setScore(String field, int value) {
 		Score score = scoreboardObjective.getScore(Bukkit.getOfflinePlayer(field));
 		score.setScore(value);

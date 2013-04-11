@@ -8,6 +8,19 @@ import org.bukkit.entity.Player;
 public class CommandListener {
 	private Game game;
 	
+	/**
+	 * Handles a command.
+	 * @param sender
+	 * The person or console who sent the command
+	 * @param cmd
+	 * The command itself
+	 * @param label
+	 * The name of the command
+	 * @param args
+	 * The arguments passed to it
+	 * @return
+	 * Whether the command was used properly.
+	 */
 	public boolean handleCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("start")) {
     		getGame().gameOverTicks = 29;

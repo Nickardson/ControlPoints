@@ -100,6 +100,13 @@ public class ConfigLoader {
 		}
     }
     
+    /**
+     * Loads an item from a configuration map.
+     * @param map
+     * The map, containing information on the item.
+     * @return
+     * An itemstack created from the config
+     */
     @SuppressWarnings("unchecked")
 	public static ItemStack loadItem(Map<?, ?> map) {
     	Material itemMaterial = Material.AIR;
@@ -196,6 +203,13 @@ public class ConfigLoader {
     	return null;
     }
     
+    /**
+     * Loads a potion effect from a configuration map
+     * @param map
+     * The config map, containing information on the potion effect.
+     * @return
+     * A potioneffect, created from the configuration
+     */
     public static PotionEffect loadPotionEffect(Map<?, ?> map) {
     	
     	if (map.containsKey("effect")) {
@@ -204,17 +218,14 @@ public class ConfigLoader {
     		int duration = 30 * 20;
     		int amplifier = 0;
     		
-    		if (map.containsKey("duration")) {
+    		if (map.containsKey("duration"))
     			duration = (Integer)map.get("duration");
-    		}
     		
-    		if (map.containsKey("amplifier")) {
+    		if (map.containsKey("amplifier"))
     			amplifier = (Integer)map.get("amplifier");
-    		}
     		
-    		if (type != null) {
+    		if (type != null)
     			return new PotionEffect(type, duration, amplifier);
-    		}
     	}
     	
     	return null;
@@ -229,48 +240,35 @@ public class ConfigLoader {
 	public static Outfit loadOutfit(Map<?, ?> map) {
     	Outfit newOutfit = new Outfit();
     	
-    	if (map.containsKey("name")) {
+    	if (map.containsKey("name"))
     		newOutfit.name = (String)map.get("name");
-    	}
     	
-    	if (map.containsKey("helmet")) {
+    	if (map.containsKey("helmet"))
     		newOutfit.helmet = (Boolean)map.get("helmet");
-    	}
     	
-    	if (map.containsKey("teamLeather")) {
+    	if (map.containsKey("teamLeather"))
     		newOutfit.colorAllLeatherToTeam = (Boolean)map.get("teamLeather");
-    	}
     	
-    	if (map.containsKey("chestplate")) {
+    	if (map.containsKey("chestplate"))
     		newOutfit.chestplate = ConfigLoader.loadItem((Map<?, ?>)map.get("chestplate"));
-    	}
     	
-    	if (map.containsKey("leggings")) {
+    	if (map.containsKey("leggings"))
     		newOutfit.leggings = ConfigLoader.loadItem((Map<?, ?>)map.get("leggings"));
-    	}
     	
-    	if (map.containsKey("boots")) {
+    	if (map.containsKey("boots"))
     		newOutfit.boots = ConfigLoader.loadItem((Map<?, ?>)map.get("boots"));
-    	}
     	
-    	if (map.containsKey("items")) {
-	    	for (Map<?, ?> item : ((List<Map<?, ?>>)map.get("items"))) {
+    	if (map.containsKey("items"))
+	    	for (Map<?, ?> item : ((List<Map<?, ?>>)map.get("items")))
 	    		newOutfit.items.add(ConfigLoader.loadItem(item));
-	    	}
-    	}
     	
-    	if (map.containsKey("potions")) {
+    	if (map.containsKey("potions"))
     		for (Map<?, ?> potionEffect : ((List<Map<?, ?>>)map.get("potions"))) {
     			PotionEffect newPotionEffect = loadPotionEffect(potionEffect);
     			
     			if (newPotionEffect != null)
     				newOutfit.potions.add(newPotionEffect);
     		}
-    	}
-    	
-    	//new PotionEffect(PotionEffectType.getByName("SLOW"), 6000, 1);
-    	
-    	
     	
     	return newOutfit;
     }

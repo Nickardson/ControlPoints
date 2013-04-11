@@ -29,24 +29,65 @@ public class Outfit {
 		potions = new ArrayList<PotionEffect>();
 	}
 	
+	/**
+	 * Whether the outfit should have a team-colored helmet.
+	 */
 	public boolean helmet = true;
+	
+	/**
+	 * The chestplate that will be cloned onto the player
+	 */
 	public ItemStack chestplate;
+	
+	/**
+	 * The legs that will be cloned onto the player
+	 */
 	public ItemStack leggings;
+	
+	/**
+	 * The boots that will be cloned onto the player
+	 */
 	public ItemStack boots;
+	
+	/**
+	 * The items that the player will have
+	 */
 	public List<ItemStack> items;
 	
+	/**
+	 * Whether to color all leather items to the player's team color
+	 */
 	public boolean colorAllLeatherToTeam = false;
 	
+	/**
+	 * The name of this outfit (eg: class name)
+	 */
 	public String name;
 	
+	/**
+	 * A list of potion effects that the wearer of this outfit will always have.
+	 */
 	public List<PotionEffect> potions;
 	
+	/**
+	 * Applies the potions to the player
+	 * @param player
+	 * The player to apply the potions to.
+	 */
 	public void applyPotions(Player player) {
 		for (PotionEffect potionEffect : potions) {
 			player.addPotionEffect(potionEffect, true);
 		}
 	}
 	
+	/**
+	 * Applies the outfit to a player.
+	 * This includes armor and potion effects.
+	 * @param player
+	 * The player to apply the outfit to
+	 * @param team
+	 * The team ID, used for colored leather
+	 */
 	public void applyTo(Player player, int team) {
 		PlayerInventory inv = player.getInventory();
 		
@@ -58,7 +99,6 @@ public class Outfit {
 		if (team == 1)
 			leatherColor = Outfit.redColor;
 		
-		//inv.setHelmet(helmet.clone());
 		if (chestplate != null) {
 			if (colorAllLeatherToTeam) {
 				inv.setChestplate(Outfit.colorLeatherArmor(chestplate.clone(), leatherColor));
@@ -112,6 +152,13 @@ public class Outfit {
     	return false;
     }
 	
+	/**
+	 * Gets whether an item is Leather armor.
+	 * @param item
+	 * The item to check
+	 * @return
+	 * Whether the item is leather.
+	 */
 	public static boolean isItemLeatherArmor(ItemStack item) {
     	String typeString = item.getType().toString();
 
@@ -124,8 +171,11 @@ public class Outfit {
 	/**
 	 * If the item is leather, then colors the item
 	 * @param item
+	 * The item to possibly set the color of
 	 * @param color
+	 * The color to set it to
 	 * @return
+	 * The same itemstack, colored.
 	 */
 	public static ItemStack colorLeatherArmor(ItemStack item, Color color) {
 		if (Outfit.isItemLeatherArmor(item)) {

@@ -25,22 +25,52 @@ public class Game {
 		this.selectedClasses = new HashMap<String, String>();
 	}
 	
+	/**
+	 * The game mode to use
+	 */
 	public GameMode gameMode = GameMode.CONQUER;
+	
+	/**
+	 * The world this game takes place in
+	 */
 	public static String world = "world";
 	
+	/**
+	 * The time left in the current round.
+	 */
 	public int timeLeft = 60 * 15;
+	
+	/**
+	 * The total number of times the blue team has won.
+	 */
 	public int redWins = 0;
+	
+	/**
+	 * The total number of times the red team has won.
+	 */
 	public int blueWins = 0;
 
-	public double capturePer20Ticks = 1;
+	public double capturePer20Ticks = .2;
 	public Map<String, Outfit> outfits;
 	public Map<String, String> selectedClasses;
 	
 	private ArrayList<Integer> blueRequiredCaptures;
 	private ArrayList<Integer> redRequiredCaptures;
 	
+	/**
+	 * The location where blue team will spawn, when the game starts.
+	 */
 	public Location blueSpawn;
+	
+	/**
+	 * The location where red team will spawn, when the game starts
+	 */
 	public Location redSpawn;
+	
+	/**
+	 * The location where players will spawn immediately after they die, and where they wait.
+	 * Should be away from places where players can reach.
+	 */
 	public Location neutralSpawn;
 	
 	public GameScoreboard gameScoreboard;
@@ -80,7 +110,14 @@ public class Game {
 	 */
 	public boolean canAutoRespawn = false;
 	
+	/**
+	 * The points that blue team automatically holds at the start of the round
+	 */
 	public List<String> bluePoints;
+	
+	/**
+	 * The points that blue team automatically holds at the start of the round
+	 */
 	public List<String> redPoints;
 	
 	/**
@@ -102,7 +139,7 @@ public class Game {
 	}
 	
 	/**
-	 * Causes the game to begin
+	 * Causes the game to begin, by settings up the various game variables to the initial position 
 	 */
 	public void begin(FileConfiguration config) {
 		isGameOver = false;
@@ -175,6 +212,15 @@ public class Game {
 		
 	}
 	
+	/**
+	 * Changes a player's class.
+	 * @param player
+	 * The player to change
+	 * @param className
+	 * The name of the class to change the player to
+	 * @return
+	 * Whether the class was changed successfully.
+	 */
 	public boolean changeClass(Player player, String className) {
 		String formattedClass = className.trim().toLowerCase();
 		
@@ -208,23 +254,6 @@ public class Game {
 	 * @return
 	 */
 	public int getWinningTeam() {
-		/*
-		// If it is not possible for a team to win by captures, then don't count captures for that team
-		boolean blueHasAll = (this.getBlueRequiredCaptures().size() != 0);
-		boolean redHasAll = (this.getRedRequiredCaptures().size() != 0);
-		
-		blueHasAll = this.getCapturePoints().isTeamFullyCaptured(this, -1);
-		redHasAll = this.getCapturePoints().isTeamFullyCaptured(this, 1);
-		
-		// Determine winner
-		if ((blueHasAll || redHasAll) && !(blueHasAll && redHasAll)) {
-			return blueHasAll ? -1 : 1;
-		}
-		else {
-			return 0;
-		}
-		*/
-		
 		if (gameMode == GameMode.CONQUER) {
 			if (this.capturePoints.getCaptured(-1).size() == this.capturePoints.size()) {
 				return -1;

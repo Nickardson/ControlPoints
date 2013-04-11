@@ -15,13 +15,19 @@ public class CapturePoint {
 	private double captureProgress;
 	private Location location;
 	
-	// Whether the capture point can be changed from it's state
+	/** 
+	 * Whether the capture point can be changed from it's state
+	 */
 	private boolean capturable;
 	
-	// Whether the capture point is allowed to slowly revert to neutral if not fully captured
+	/**
+	 * Whether the capture point is allowed to slowly revert to neutral if not fully captured
+	 */
 	private boolean autoNeutral;
 	
-	// The team attacking the capture point.  If this == 0, then any team can capture the capture point.  Otherwise, only that team can change the capture point.
+	/**
+	 *  The team attacking the capture point.  If this == 0, then any team can capture the capture point.  Otherwise, only that team can change the capture point.
+	 */
 	private int assualtingTeam;
 	
 	public CapturePoint(Location loc, boolean capturable, boolean autoneutral) {
@@ -56,10 +62,18 @@ public class CapturePoint {
 		location = loc;
 	}
 	
+	/**
+	 * Gets the current progress on this capture point
+	 * @return
+	 * Negative if blue, positive if red.
+	 */
 	public double getCaptureProgress() {
 		return captureProgress;
 	}
 	
+	/**
+	 * Resets the capture progress of this capture point to 0.
+	 */
 	public void resetCaptureProgress() {
 		captureProgress = 0;
 		
@@ -163,6 +177,10 @@ public class CapturePoint {
 		setTeamBlock(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), team);
 	}
 
+	/**
+	 * Gets whether this capture point automatically reverts to neutral
+	 * @return
+	 */
 	public boolean isAutoNeutral() {
 		return autoNeutral;
 	}
