@@ -87,17 +87,32 @@ public class ConfigLoader {
     	game.getBlueRequiredCaptures().clear();
     	game.getRedRequiredCaptures().clear();
     	
-    	for (String blueWin : blueWinString) {
-			int win = Integer.parseInt(blueWin);
-			if (win >= 0)
-				game.getBlueRequiredCaptures().add(win);
-		}
+    	if (blueWinString.size() == 0) {
+    		for (int i = 0; i < game.getCapturePoints().size(); i++) {
+    			game.getBlueRequiredCaptures().add(i);
+    		}
+    	}
+    	else {
+	    	for (String blueWin : blueWinString) {
+				int win = Integer.parseInt(blueWin);
+				if (win >= 0)
+					game.getBlueRequiredCaptures().add(win);
+			}
+    	}
 		
-		for (String redWin : redWinString) {
-			int win = Integer.parseInt(redWin);
-			if (win >= 0)
-				game.getRedRequiredCaptures().add(win);
-		}
+    	if (redWinString.size() == 0) {
+    		for (int i = 0; i < game.getCapturePoints().size(); i++) {
+    			game.getRedRequiredCaptures().add(i);
+    		}
+    	}
+    	else {
+    		for (String redWin : redWinString) {
+	    		int win = Integer.parseInt(redWin);
+				if (win >= 0)
+					game.getRedRequiredCaptures().add(win);
+			}
+    	}
+		
     }
     
     /**
