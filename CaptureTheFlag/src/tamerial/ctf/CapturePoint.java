@@ -245,7 +245,7 @@ public class CapturePoint {
 	public List<Player> getNearbyPlayersOnTeam(double radius, Teams teamService, int team) {
 		List<Player> nearList = new ArrayList<Player>();
 		
-		for (Player player : this.getNearbyPlayers(3.5)) {
+		for (Player player : this.getNearbyPlayers(radius)) {
 			if (teamService.getTeam(player.getName()) == team) {
 				nearList.add(player);
 			}

@@ -125,7 +125,9 @@ public class Outfit {
 		}
 		
 		for (ItemStack item : items) {
-			inv.addItem(item);
+			if (item != null) {
+				inv.addItem(item);
+			}
 		}
 		
 		this.applyPotions(player);

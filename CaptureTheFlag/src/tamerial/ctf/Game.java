@@ -231,10 +231,8 @@ public class Game {
 			
 			// TODO: Only kill if game is started and player is not in box
 			double distanceToSpawn = player.getLocation().distanceSquared(this.neutralSpawn);
-			if (distanceToSpawn > 100) {
-				if (this.canAutoRespawn) {
-					player.setHealth(0);
-				}
+			if (distanceToSpawn > 100 || this.canAutoRespawn) {
+				player.setHealth(0);
 			}
 			
 			player.sendMessage(ChatColor.GREEN + "Class changed to " + formattedClass + ChatColor.RESET);
@@ -244,6 +242,22 @@ public class Game {
 		else {
 			player.sendMessage(ChatColor.RED + "Invalid class name.  Use /class to view available classes" + ChatColor.RESET);
 			return false;
+		}
+	}
+	
+	/**
+	 * Gets the class a player has selected.
+	 * @param player
+	 * The name of the player to check.
+	 * @return
+	 * The class the player has selected, or null if they haven't selected.
+	 */
+	public String getSelectedClass(String player) {
+		if (selectedClasses.containsKey(player)) {
+			return selectedClasses.get(player);
+		}
+		else {
+			return null;
 		}
 	}
 	

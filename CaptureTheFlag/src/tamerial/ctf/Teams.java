@@ -32,8 +32,8 @@ public class Teams {
 	@Deprecated
 	public void setTeamColor(String player, ChatColor color) {
 		String newName = color + player + ChatColor.RESET;
-		Bukkit.getPlayer(player).setDisplayName(newName);
-		Bukkit.getPlayer(player).setPlayerListName(newName);
+		//Bukkit.getPlayer(player).setDisplayName(newName);
+		//Bukkit.getPlayer(player).setPlayerListName(newName);
 	}
 	
 	/**

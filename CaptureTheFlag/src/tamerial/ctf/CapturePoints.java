@@ -3,15 +3,8 @@ package tamerial.ctf;
 import java.util.ArrayList;
 
 public class CapturePoints extends ArrayList<CapturePoint> {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
-	public CapturePoints() {
-		
-	}
-	
 	/**
 	 * Gets whether a team has captured all
 	 * @param game

@@ -5,12 +5,16 @@ import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import tamerial.ctf.interactions.FlamethrowerInteraction;
 
 public class CaptureTheFlag extends JavaPlugin implements Listener {
 	public Game game;
@@ -26,13 +30,19 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 		
 		eventListener = new EventListener();
 		eventListener.setGame(game);
+		eventListener.getInteractHandlers().add(new FlamethrowerInteraction(game, "pyro", Material.BLAZE_POWDER, Material.BLAZE_POWDER));
+		//eventListener.getInteractHandlers().add(new HealAttackInteraction(game, "medic", Material.GOLD_SPADE, 2));
+		
 		
 		commandListener = new CommandListener();
 		commandListener.setGame(game);
 		
-		if (getConfig().getString("ctf.world") != null)
+		if (getConfig().getString("ctf.world") != null && !getConfig().getString("ctf.world").equals(""))
 			Game.world = getConfig().getString("ctf.world");
-		
+		else {
+			Game.world = "world";
+			System.out.println(ChatColor.RED + "Unable to load World from Config, defaulting to world ('world')");
+		}
 		
 		// Load spawn coordinates
 		game.blueSpawn = ConfigLoader.getCoordsLocation(Bukkit.getWorld(Game.world), this.getConfig().getString("ctf.blueSpawn"));
@@ -111,8 +121,8 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 					for (int i = 0; i < game.getCapturePoints().size(); i++) {
 						CapturePoint capPoint = game.getCapturePoints().get(i);
 						
-						int blueMembers = capPoint.getNearbyPlayersOnTeam(3.5, game.teams, -1).size();
-						int redMembers = capPoint.getNearbyPlayersOnTeam(3.5, game.teams, 1).size();
+						int blueMembers = capPoint.getNearbyPlayersOnTeam(3.2, game.teams, -1).size();
+						int redMembers = capPoint.getNearbyPlayersOnTeam(3.2, game.teams, 1).size();
 						
 						// Only run when there are members capturing, but not when there are members from both teams
 						if (!(blueMembers!=0 && redMembers!=0) && (blueMembers + redMembers > 0)) {
@@ -181,12 +191,14 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 		Bukkit.getScheduler().runTaskTimer(this, new Runnable(){
 			@Override
 			public void run() {
-				for (Player player : Bukkit.getWorld(Game.world).getPlayers())
-				if (game.selectedClasses.containsKey(player.getName())) {
-					game.outfits.get(game.selectedClasses.get(player.getName())).applyPotions(player);
+					for (Player player : Bukkit.getWorld(Game.world).getPlayers()) {
+						String selectedClass = game.getSelectedClass(player.getName());
+						if (selectedClass != null) {
+							game.outfits.get(selectedClass).applyPotions(player);
+					}
 				}
 			}}, 
-			0,200
+			0,20 * 4
 		);
 		
     	
