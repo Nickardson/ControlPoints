@@ -6,6 +6,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 public class CapturePoint {
@@ -176,13 +177,32 @@ public class CapturePoint {
 	public void setTeamBlock(Location loc, int team) {
 		setTeamBlock(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), team);
 	}
+	
+	private boolean isPOI;
+	
+	public void setIsPointOfIntrest(boolean isPOI) {
+		int newId = (isPOI ? 138 : 0);
+		this.getWorld().getBlockAt(this.getLocation().clone().add(0, 1, 0)).setTypeId(newId);
+		
+		this.isPOI = isPOI;
+	}
+	
+	public boolean isPointOfIntrest() {
+		return isPOI;
+	}
 
 	/**
-	 * Gets whether this capture point automatically reverts to neutral
+	 * Gets whether this capture point should automatically reverts to neutral
+	 * Will always return false if the point has been fully captured
 	 * @return
 	 */
 	public boolean isAutoNeutral() {
-		return autoNeutral;
+		if (getCaptureProgress() <= 16) {
+			return autoNeutral;
+		}
+		else {
+			return false;
+		}
 	}
 
 	public void setAutoNeutral(boolean autoNeutral) {

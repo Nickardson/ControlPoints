@@ -15,7 +15,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -26,9 +25,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 public class EventListener implements Listener {
 	private Game game;
@@ -123,7 +120,8 @@ public class EventListener implements Listener {
 	    game.gameScoreboard.showScoreboard(event.getPlayer());
     }
     
-    @EventHandler
+    @SuppressWarnings("deprecation")
+	@EventHandler
     public void onTakeDamage(EntityDamageByEntityEvent event) {
     	if (!event.getEntity().getWorld().getName().equals(Game.world))
     		return;

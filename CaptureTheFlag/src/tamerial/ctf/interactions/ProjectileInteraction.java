@@ -21,6 +21,7 @@ public abstract class ProjectileInteraction extends InteractHandler {
 		setWeaponMaterial(weaponMaterial);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void handle(PlayerInteractEvent event) {
 		PlayerInventory inventory = event.getPlayer().getInventory();

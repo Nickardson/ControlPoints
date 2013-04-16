@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class Teams {
@@ -20,20 +19,6 @@ public class Teams {
 		playerTeams.put(player, new Integer(team));
 		
 		game.gameScoreboard.setTeam(Bukkit.getOfflinePlayer(player), team);
-	}
-	
-	/**
-	 * Sets a player's name so that their name is correctly colored
-	 * @param player
-	 * The name of the player
-	 * @param color
-	 * The color to set it to
-	 */
-	@Deprecated
-	public void setTeamColor(String player, ChatColor color) {
-		String newName = color + player + ChatColor.RESET;
-		//Bukkit.getPlayer(player).setDisplayName(newName);
-		//Bukkit.getPlayer(player).setPlayerListName(newName);
 	}
 	
 	/**

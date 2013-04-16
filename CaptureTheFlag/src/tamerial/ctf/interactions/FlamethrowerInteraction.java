@@ -2,11 +2,9 @@ package tamerial.ctf.interactions;
 
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import tamerial.ctf.Game;

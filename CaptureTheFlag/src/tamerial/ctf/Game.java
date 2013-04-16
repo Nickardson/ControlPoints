@@ -28,7 +28,7 @@ public class Game {
 	/**
 	 * The game mode to use
 	 */
-	public GameMode gameMode = GameMode.CONQUER;
+	private GameMode gameMode = GameMode.CONQUER;
 	
 	/**
 	 * The world this game takes place in
@@ -149,6 +149,7 @@ public class Game {
 		forcePause = false;
 		timeLeft = 60 * 15;
 		this.prepareCapturePoints(config);
+		this.capturePoints.preparePointsOfIntrest();
 	}
 
 	/**
@@ -268,7 +269,7 @@ public class Game {
 	 * @return
 	 */
 	public int getWinningTeam() {
-		if (gameMode == GameMode.CONQUER) {
+		if (getGameMode() == GameMode.CONQUER) {
 			if (this.capturePoints.getCaptured(-1).size() == this.capturePoints.size()) {
 				return -1;
 			}
@@ -276,7 +277,7 @@ public class Game {
 				return 1;
 			}
 		}
-		else if (gameMode == GameMode.DEFEND) {
+		else if (getGameMode() == GameMode.DEFEND) {
 			if (this.capturePoints.getCaptured(1).size() >= this.capturePoints.size()) {
 				return 1;
 			}
@@ -295,7 +296,7 @@ public class Game {
 	 * @return
 	 */
 	public int getLeadingTeam() {
-		if (gameMode == GameMode.CONQUER) {
+		if (getGameMode() == GameMode.CONQUER) {
 			int blueCaptured = this.capturePoints.getCaptured(-1).size();
 			int redCaptured = this.capturePoints.getCaptured(1).size();
 			
@@ -304,7 +305,7 @@ public class Game {
 			
 			return (int) Math.signum(total);
 		}
-		else if (gameMode == GameMode.DEFEND) {
+		else if (getGameMode() == GameMode.DEFEND) {
 			// If Red team has captured all of the points, Return red, otherwise blue is still winning
 			if (this.capturePoints.getCaptured(1).size() >= this.capturePoints.size()) {
 				return 1;
@@ -324,5 +325,13 @@ public class Game {
 		for (Player player : Bukkit.getWorld(Game.world).getPlayers()) {
 			player.sendMessage(message);
 		}
+	}
+
+	public GameMode getGameMode() {
+		return gameMode;
+	}
+
+	public void setGameMode(GameMode gameMode) {
+		this.gameMode = gameMode;
 	}
 }

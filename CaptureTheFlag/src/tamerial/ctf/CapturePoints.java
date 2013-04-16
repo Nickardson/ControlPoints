@@ -24,7 +24,7 @@ public class CapturePoints extends ArrayList<CapturePoint> {
 		
 		for (int pointId : requiredCaptures) {
 			double captureProgress = this.get(pointId).getCaptureProgress();
-			if (Math.abs(captureProgress) < 15.999 || Math.signum(team) != Math.signum(captureProgress)) {
+			if (Math.abs(captureProgress) < 16 || Math.signum(team) != Math.signum(captureProgress)) {
 				hasAll = false;
 				break;
 			}
@@ -84,5 +84,35 @@ public class CapturePoints extends ArrayList<CapturePoint> {
 		}
 		
 		return total;
+	}
+	
+	/**
+	 * Gets the capture point that RED team should be capturing in a DEFEND match
+	 * @return
+	 */
+	public CapturePoint getPointOfIntrest() {
+		// TODO: Get POI
+		CapturePoint poi = null;
+		
+		for (int i = 0; i < this.size(); i++) {
+			CapturePoint point = this.get(i);
+			
+			if (point.getCaptureProgress() < 16) {
+				poi = point;
+				break;
+			}
+		}
+		
+		return poi;
+	}
+	
+	/**
+	 * Sets up the capture points so that they have the proper isPointOfIntrest values, and the proper visual beacon display.
+	 */
+	public void preparePointsOfIntrest() {
+		CapturePoint poi = getPointOfIntrest();
+		for (CapturePoint point : this) {
+			point.setIsPointOfIntrest(point.equals(poi));
+		}
 	}
 }

@@ -11,7 +11,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import tamerial.ctf.interactions.FlamethrowerInteraction;
@@ -37,6 +36,11 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 		commandListener = new CommandListener();
 		commandListener.setGame(game);
 		
+		String gameMode = getConfig().getString("ctf.mode");
+		if (gameMode != null) {
+			game.setGameMode(GameMode.valueOf(gameMode.toUpperCase()));
+		}
+		
 		if (getConfig().getString("ctf.world") != null && !getConfig().getString("ctf.world").equals(""))
 			Game.world = getConfig().getString("ctf.world");
 		else {
@@ -58,10 +62,14 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 			System.out.println("Loading capture point with location: \"" + capturePoint + "\"");
 			
 			CapturePoint newCapturePoint = new CapturePoint(ConfigLoader.getCoordsLocation(Bukkit.getWorld(Game.world), capturePoint));
+			
+			if (game.getGameMode() == GameMode.DEFEND) {
+				newCapturePoint.setAssualtingTeam(1);
+				newCapturePoint.setAutoNeutral(true);
+			}
+			
 			game.getCapturePoints().add(newCapturePoint);
 		}
-		
-		game.prepareCapturePoints(this.getConfig());
 		
 		
 		// Prepare capturing
@@ -70,6 +78,12 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 		
 		// Prepare scoreboards
 		game.gameScoreboard = new GameScoreboard(game);
+		
+		
+		// Set up game environment variables, and game capture points
+		game.prepareCapturePoints(getConfig());
+		game.getCapturePoints().preparePointsOfIntrest();
+		
 		
 		// Periodic game update
 		final FileConfiguration runnableConfig = this.getConfig();
@@ -117,6 +131,8 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 						}
 					}
 					
+					game.getCapturePoints().preparePointsOfIntrest();
+					
 					// Capturing logic
 					for (int i = 0; i < game.getCapturePoints().size(); i++) {
 						CapturePoint capPoint = game.getCapturePoints().get(i);
@@ -124,10 +140,18 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 						int blueMembers = capPoint.getNearbyPlayersOnTeam(3.2, game.teams, -1).size();
 						int redMembers = capPoint.getNearbyPlayersOnTeam(3.2, game.teams, 1).size();
 						
+						// If the mode is defend, only allow changes on the point of contention.
+						if (game.getGameMode() == GameMode.DEFEND) {
+							if (!capPoint.isPointOfIntrest()) {
+								continue;
+							}
+						}
+						
 						// Only run when there are members capturing, but not when there are members from both teams
 						if (!(blueMembers!=0 && redMembers!=0) && (blueMembers + redMembers > 0)) {
 							int capturingTeam = (blueMembers > redMembers) ? -1 : 1;
 							
+							// Only advance if the point is capturable, and if the team able to capture is the team that is supposed to be capturing.
 							if (capPoint.isCapturable() && (capPoint.getAssualtingTeam() == 0 || capPoint.getAssualtingTeam() == capturingTeam)) {
 								double previousCaptureProgress = capPoint.getCaptureProgress();
 								boolean changed = capPoint.setCaptureProgress((capPoint.getCaptureProgress() + game.capturePer20Ticks * capturingTeam * (Math.max(blueMembers, redMembers))));
@@ -138,6 +162,46 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 								
 								if (changed && (Math.abs(previousCaptureProgress) == 16 || previousCaptureProgress == 0)) {
 									Game.broadcast((capturingTeam==1?(ChatColor.RED+"Red"):(ChatColor.BLUE+"Blue")) + ChatColor.RESET + " team is taking control of point #" + Integer.toString(i+1) + "!");
+								}
+							}
+						}
+						
+						// Revert back to 0
+						if (capPoint.isAutoNeutral()) {
+							boolean revert = false;
+							boolean extraRevert = false;
+							
+							if (capPoint.getAssualtingTeam() == 0) {
+								if (blueMembers == 0 && redMembers == 0) {
+									revert = true;
+								}
+							}
+							else {
+								if (capPoint.getAssualtingTeam() == -1 && blueMembers == 0) {
+									revert = true;
+									
+									if (redMembers > 0)
+										extraRevert = true;
+								}
+								
+								if (capPoint.getAssualtingTeam() == 1 && redMembers == 0) {
+									revert = true;
+									
+									if (blueMembers > 0)
+										extraRevert = true;
+								}
+							}
+							
+							if (revert) {
+								double revertAmount = extraRevert ? (game.capturePer20Ticks/2) : (game.capturePer20Ticks/4);
+								double progress = capPoint.getCaptureProgress();
+								
+								if (Math.abs(progress) < revertAmount) {
+									capPoint.setCaptureProgress(0);
+								}
+								else {
+									int direction = (int) (Math.signum(progress) * -1);
+									capPoint.setCaptureProgress(capPoint.getCaptureProgress() + (revertAmount * direction));
 								}
 							}
 						}
@@ -187,7 +251,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 			0,10
 		);
 		
-		// Periodically apply potions every 10 seconds
+		// Periodically apply potions every 4 seconds
 		Bukkit.getScheduler().runTaskTimer(this, new Runnable(){
 			@Override
 			public void run() {
