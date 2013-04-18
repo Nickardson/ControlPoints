@@ -1,5 +1,12 @@
 package tamerial.ctf;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
@@ -20,6 +27,9 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 	double accumulatedTicks = 0;
 	public EventListener eventListener;
 	public CommandListener commandListener;
+	public boolean useSiteBoard = false;
+	public String siteLocation;
+	public String siteKey;
 	
 	@Override
     public void onEnable(){
@@ -57,6 +67,12 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 		game.neutralSpawn = new Location(Bukkit.getWorld(Game.world), coords[0], coords[1], coords[2]);
 		
 		
+		// Prepare online scoreboard
+		this.useSiteBoard = getConfig().getBoolean("ctf.useSiteBoard");
+		this.siteLocation = getConfig().getString("ctf.siteLocation");
+		this.siteKey = getConfig().getString("ctf.siteKey");
+		
+		
 		// Prepare capture points
 		for (String capturePoint : this.getConfig().getStringList("ctf.capturePoints")) {
 			System.out.println("Loading capture point with location: \"" + capturePoint + "\"");
@@ -69,6 +85,10 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 			}
 			
 			game.getCapturePoints().add(newCapturePoint);
+		}
+		
+		if (useSiteBoard) {
+			sendGETData("mode="+game.getGameMode().toString());
 		}
 		
 		
@@ -102,6 +122,8 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 						
 						game.timeLeft--;
 						
+						sendCaptureData();
+						
 						if (game.timeLeft < 0)
 							game.timeLeft = 0;
 						
@@ -127,6 +149,8 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 							else {
 								Game.broadcast(ChatColor.GREEN + "Neither team won this round.");
 							}
+							
+							sendCaptureData();
 							game.end();
 						}
 					}
@@ -143,6 +167,7 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 						// If the mode is defend, only allow changes on the point of contention.
 						if (game.getGameMode() == GameMode.DEFEND) {
 							if (!capPoint.isPointOfIntrest()) {
+								capPoint.setLastNumberCapturing(0);
 								continue;
 							}
 						}
@@ -150,6 +175,8 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 						// Only run when there are members capturing, but not when there are members from both teams
 						if (!(blueMembers!=0 && redMembers!=0) && (blueMembers + redMembers > 0)) {
 							int capturingTeam = (blueMembers > redMembers) ? -1 : 1;
+							
+							capPoint.setLastNumberCapturing(blueMembers + redMembers);
 							
 							// Only advance if the point is capturable, and if the team able to capture is the team that is supposed to be capturing.
 							if (capPoint.isCapturable() && (capPoint.getAssualtingTeam() == 0 || capPoint.getAssualtingTeam() == capturingTeam)) {
@@ -164,6 +191,9 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
 									Game.broadcast((capturingTeam==1?(ChatColor.RED+"Red"):(ChatColor.BLUE+"Blue")) + ChatColor.RESET + " team is taking control of point #" + Integer.toString(i+1) + "!");
 								}
 							}
+						}
+						else {
+							capPoint.setLastNumberCapturing(0);
 						}
 						
 						// Revert back to 0
@@ -282,5 +312,55 @@ public class CaptureTheFlag extends JavaPlugin implements Listener {
     
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
     	return commandListener.handleCommand(sender, cmd, label, args);
+    }
+    
+    public boolean sendGETData(String data) {
+    	try {
+			URL url = new URL(siteLocation + "request.php?key=" + siteKey + "&" + data);
+			
+			//System.out.println(url.toString());
+			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("GET");
+			connection.connect();
+			
+			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+			String inputLine;
+
+			while((inputLine = in.readLine()) != null)
+			{
+				//System.out.println(inputLine);
+			}
+
+			in.close();
+			
+			return true;
+		} 
+    	catch (MalformedURLException e) {e.printStackTrace();} 
+    	catch (IOException e) {e.printStackTrace();}
+    	
+    	return false;
+    }
+    
+    public void sendCaptureData() {
+    	if (useSiteBoard) {
+			String pointData = "";
+			String captureData = "";
+			String lastCapturingData = "";
+			
+			int i = 0;
+			for (CapturePoint point : game.getCapturePoints()) {
+				pointData += i + ",";
+				captureData += ((100/16.0) * point.getCaptureProgress()) + ",";
+				lastCapturingData += point.getLastNumberCapturing() + ",";
+				
+				i++;
+			}
+			
+			pointData = pointData.substring(0, pointData.length()-1);
+			captureData = captureData.substring(0, captureData.length()-1);
+			lastCapturingData = lastCapturingData.substring(0, lastCapturingData.length()-1);
+			
+			sendGETData("points=" + pointData + "&progress=" + captureData + "&capturing=" + lastCapturingData);
+		}
     }
 }

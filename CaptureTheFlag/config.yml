@@ -21,6 +21,9 @@ ctf:
   capturePer20Ticks: 0.2
   mode: conquer
   world: world
+  useSiteBoard: false
+  siteLocation: "http://localhost/capture-points/"
+  siteKey: ""
   outfits:
   - name: Warrior
     description: A powerful tank with heavy armor

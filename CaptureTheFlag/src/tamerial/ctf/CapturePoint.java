@@ -273,4 +273,14 @@ public class CapturePoint {
 		
 		return nearList;
 	}
+
+	private int lastNumberCapturing = 0;
+	public void setLastNumberCapturing(int i) {
+		// TODO Auto-generated method stub
+		lastNumberCapturing = i;
+	}
+	
+	public int getLastNumberCapturing() {
+		return lastNumberCapturing;
+	}
 }
