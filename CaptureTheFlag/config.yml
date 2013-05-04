@@ -1,4 +1,6 @@
 ctf:
+  enabled: false
+  minPlayers: 2
   blueSpawn: 0, 50, 0
   redSpawn: 0, 50, 0
   neutralSpawn: 0, 50, 0

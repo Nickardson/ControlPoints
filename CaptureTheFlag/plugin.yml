@@ -1,6 +1,6 @@
 name: CaptureTheFlag
 main: tamerial.ctf.CaptureTheFlag
-version: 0.0
+version: 0.1
 commands:
   start:
     permission: ctf.start
@@ -8,14 +8,11 @@ commands:
     usage: /<command>
   pause:
     permission: ctf.pause
-    description: Pauses a game indefinitely
+    description: Pauses and unpauses a game.
   gametime:
     permission: ctf.gametime
     description: Changes the time remaining in the game.
     usage: /<command> [time]
-  listmodes:
-    permission: ctf.listmodes
-    description: Lists the possible modes for a game
   progress:
     permission: ctf.progress
     description: Progresses a capture point to a specific value
@@ -24,6 +21,7 @@ commands:
     description: Join a team, as long as joining won't make your team more than one person overpowered
     usage: /<command> [red / blue]
     aliases: team  
+    permission: ctf.player
   forcejoin:
     description: Makes a player join a team.
     usage: /<command> [player] [team]
@@ -31,16 +29,19 @@ commands:
   class:
     description: Selects a class
     aliases: be
+    permission: ctf.player
   
 permissions:
+  ctf.player:
+    default: true
   ctf.gamemaster:
     default: op
     children:
       ctf.start: true
       ctf.pause: true
-      ctf.listmodes: true
       ctf.gametime: true
       ctf.forcejoin: true
+      ctf.progress: true
   ctf.start:
     default: op
   ctf.pause:
@@ -48,8 +49,6 @@ permissions:
   ctf.gametime:
     default: op
   ctf.forcejoin:
-    default: op
-  ctf.listmodes:
     default: op
   ctf.progress:
     default: op

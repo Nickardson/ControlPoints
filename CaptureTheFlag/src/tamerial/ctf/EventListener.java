@@ -49,7 +49,9 @@ public class EventListener implements Listener {
     	if (!event.getPlayer().getWorld().getName().equals(Game.world))
     		return;
     	
-    	game.gameScoreboard.showScoreboard(event.getPlayer());
+    	if (CaptureTheFlag.enabled) {
+    		game.gameScoreboard.showScoreboard(event.getPlayer());
+    	}
     }
     
     @EventHandler

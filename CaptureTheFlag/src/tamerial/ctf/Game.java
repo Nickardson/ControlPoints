@@ -36,6 +36,11 @@ public class Game {
 	public static String world = "world";
 	
 	/**
+	 * The minimum number of players required to start a game.
+	 */
+	public static int minPlayers = 2;
+	
+	/**
 	 * The time left in the current round.
 	 */
 	public int timeLeft = 60 * 15;
